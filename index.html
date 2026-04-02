@@ -144,7 +144,7 @@
     <div class="settings-section">
       <div class="settings-section-title">Info</div>
       <div class="settings-item"><span>Total gastos guardados</span><span id="stat-count" style="color:var(--text2)">0</span></div>
-      <div class="settings-item"><span>Versión</span><span style="color:var(--text2)">1.0.1</span></div>
+      <div class="settings-item"><span>Versión</span><span style="color:var(--text2)">1.0.2</span></div>
     </div>
   </div>
 </div>
@@ -367,7 +367,7 @@ function saveExpense() {
   const notes  = document.getElementById('f-notes').value.trim();
   const id     = document.getElementById('f-id').value;
 
-  if (!name)               { showToast('Escribe el nombre del establecimiento'); return; }
+  if (!name)                 { showToast('Escribe el nombre del establecimiento'); return; }
   if (isNaN(amount)||amount<0) { showToast('Introduce un importe válido'); return; }
 
   if (id) {
@@ -393,7 +393,10 @@ function deleteAll() {
   showToast('Todos los gastos eliminados');
 }
 
-function saveApiKey(val) { localStorage.setItem('gemini_key', val); }
+function saveApiKey(val) { 
+    const cleanKey = val.trim();
+    localStorage.setItem('gemini_key', cleanKey); 
+}
 
 function exportData() {
   const blob = new Blob([JSON.stringify(expenses,null,2)], {type:'application/json'});
@@ -428,88 +431,4 @@ function showCharts() {
             <span>${icon} ${cat}</span>
             <span style="font-weight:600">€${amt.toFixed(2)} <span style="color:var(--text2);font-weight:400">(${(amt/total*100).toFixed(0)}%)</span></span>
           </div>
-          <div style="background:var(--bg3);border-radius:6px;height:10px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${color};border-radius:6px"></div>
-          </div>
-        </div>`;
-      }).join('');
-  document.getElementById('overlay-charts').classList.add('open');
-}
-
-// --- GEMINI SCAN CORREGIDO ---
-async function handleImage(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    const dataUrl = ev.target.result;
-    const preview = document.getElementById('scan-preview');
-    preview.src = dataUrl;
-    preview.style.display = 'block';
-    document.getElementById('scan-placeholder').style.display = 'none';
-    await scanWithGemini(dataUrl);
-  };
-  reader.readAsDataURL(file);
-}
-
-async function scanWithGemini(dataUrl) {
-  const apiKey = localStorage.getItem('gemini_key');
-  if (!apiKey) { showToast('Configura tu API key de Gemini en Ajustes ⚙️'); return; }
-
-  const resultEl = document.getElementById('scan-result');
-  resultEl.style.display = 'block';
-  resultEl.style.color   = 'var(--text2)';
-  resultEl.innerHTML     = '<span class="spinner"></span> Analizando ticket...';
-
-  const base64 = dataUrl.split(',')[1];
-  const mime   = dataUrl.split(';')[0].split(':')[1];
-
-  const promptText = `Analiza este ticket/recibo. Extrae: 1. Establecimiento. 2. Importe total. 3. Fecha (formato YYYY-MM-DD). 4. Categoría (Comida, Gasolina, Transporte, Material, Varios, Salud, Ocio, Ropa). 5. Una nota corta.
-  Responde ÚNICAMENTE en este formato JSON, sin textos adicionales:
-  {"name": "nombre", "amount": 00.00, "date": "YYYY-MM-DD", "category": "Categoría", "notes": ""}`;
-
-  try {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [
-            { inline_data: { mime_type: mime, data: base64 } },
-            { text: promptText }
-          ]}]
-        })
-      }
-    );
-    
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
-
-    // Limpieza de la respuesta para evitar errores si Gemini devuelve ```json ... ```
-    let textResult = data.candidates[0].content.parts[0].text;
-    textResult = textResult.replace(/```json/g, "").replace(/```/g, "").trim();
-    
-    const parsed = JSON.parse(textResult);
-    
-    if (parsed.name)     document.getElementById('f-name').value = parsed.name;
-    if (parsed.amount)   document.getElementById('f-amount').value = parseFloat(parsed.amount);
-    if (parsed.date)     document.getElementById('f-date').value = parsed.date;
-    if (parsed.category) document.getElementById('f-category').value = parsed.category;
-    if (parsed.notes)    document.getElementById('f-notes').value = parsed.notes;
-
-    resultEl.style.color = '#27ae60';
-    resultEl.innerHTML   = '✅ Datos extraídos correctamente.';
-    showToast('Campos rellenados ✓');
-    
-  } catch(err) {
-    console.error(err);
-    resultEl.style.color = 'var(--danger)';
-    resultEl.innerHTML   = '❌ Error al leer ticket. Inténtalo de nuevo.';
-  }
-}
-
-render();
-</script>
-</body>
-</html>
+          <div style="background:var(--bg3);border-radius:6
