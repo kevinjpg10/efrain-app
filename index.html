@@ -122,23 +122,28 @@ async function scanWithGemini(url) {
   const key = localStorage.getItem('gemini_key');
   if(!key) return alert('Configura la API Key en Ajustes');
   const status = document.getElementById('scan-status');
-  status.innerHTML = '<span class="spinner"></span> Leyendo ticket...';
+  status.innerHTML = '<span class="spinner"></span> Analizando con Gemini 1.5 Pro...';
   
   const base64 = url.split(',')[1];
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+    // CAMBIO CLAVE: Usamos v1 y gemini-1.5-pro para evitar el error de disponibilidad
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${key}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [
-          { text: "Analiza este ticket y responde SOLO con este JSON: {\"name\":\"tienda\",\"amount\":0.00,\"date\":\"YYYY-MM-DD\"}" },
+          { text: "Eres un experto en lectura de tickets. Analiza esta imagen y devuelve estrictamente un objeto JSON con el siguiente formato: {\"name\":\"Nombre Tienda\",\"amount\":0.00,\"date\":\"YYYY-MM-DD\"}. Si no ves la fecha usa la de hoy." },
           { inline_data: { mime_type: "image/jpeg", data: base64 } }
         ]}]
       })
     });
     
     const data = await res.json();
-    // Corregimos la extracción del texto para evitar el [object Object]
+    
+    if (data.error) {
+        throw new Error(data.error.message);
+    }
+
     let rawText = data.candidates[0].content.parts[0].text;
     const jsonStr = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
     const result = JSON.parse(jsonStr);
@@ -146,10 +151,10 @@ async function scanWithGemini(url) {
     document.getElementById('f-name').value = result.name || '';
     document.getElementById('f-amount').value = result.amount || '';
     document.getElementById('f-date').value = result.date || '';
-    status.innerHTML = '<span style="color:var(--green)">✅ Escaneado con éxito</span>';
+    status.innerHTML = '<span style="color:var(--green)">✅ Procesado con éxito</span>';
   } catch(err) {
     console.error(err);
-    status.innerHTML = '<span style="color:var(--danger)">❌ Error al leer el ticket</span>';
+    status.innerHTML = `<span style="color:var(--danger)">❌ Reintenta con otra foto: ${err.message.substring(0, 30)}...</span>`;
   }
 }
 render();
