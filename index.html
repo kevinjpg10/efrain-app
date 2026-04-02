@@ -12,23 +12,24 @@
     --accent: #4a90d9; --green: #27ae60; --danger: #ff4444;
     --radius: 14px; --radius-sm: 8px;
   }
-  body { background: var(--bg); color: var(--text); font-family: sans-serif; min-height: 100vh; }
+  body { background: var(--bg); color: var(--text); font-family: sans-serif; min-height: 100vh; overflow-x: hidden; }
   .screen { display: none; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; }
   .screen.active { display: flex; }
   .header { display: flex; align-items: center; justify-content: space-between; padding: 20px; }
   .stats { display: flex; gap: 10px; padding: 0 20px 20px; }
-  .stat-card { flex: 1; background: var(--bg2); border-radius: var(--radius); padding: 15px; text-align: center; }
+  .stat-card { flex: 1; background: var(--bg2); border-radius: var(--radius); padding: 15px; text-align: center; border: 1px solid #333; }
   .list { flex: 1; overflow-y: auto; padding: 0 20px 80px; }
-  .expense-item { display: flex; justify-content: space-between; background: var(--bg2); border-radius: 12px; padding: 15px; margin-bottom: 10px; }
-  .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; color: #fff; font-size: 30px; cursor: pointer; }
+  .expense-item { display: flex; justify-content: space-between; background: var(--bg2); border-radius: 12px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
+  .fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; color: #fff; font-size: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 99; }
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 100; align-items: flex-end; }
   .overlay.open { display: flex; }
-  .sheet { background: var(--bg2); border-radius: 20px 20px 0 0; padding: 25px; width: 100%; max-height: 90vh; overflow-y: auto; }
-  .form-input { width: 100%; background: var(--bg3); border: none; border-radius: 8px; padding: 14px; color: var(--text); margin-bottom: 15px; font-size: 16px; }
-  .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
+  .sheet { background: var(--bg2); border-radius: 20px 20px 0 0; padding: 25px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 -5px 20px rgba(0,0,0,0.5); }
+  .form-input { width: 100%; background: var(--bg3); border: 1px solid #444; border-radius: 8px; padding: 14px; color: var(--text); margin-bottom: 15px; font-size: 16px; outline: none; }
+  .btn { width: 100%; padding: 15px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+  .btn:active { opacity: 0.7; }
   .btn-primary { background: var(--accent); color: #fff; }
-  .scan-area { background: var(--bg3); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; }
-  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #fff3; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; }
+  .scan-area { background: var(--bg3); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; border: 2px dashed #444; }
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #fff3; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; vertical-align: middle; margin-right: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -36,7 +37,7 @@
 
 <div class="screen active" id="screen-main">
   <div class="header">
-    <h1 style="font-size: 24px;">Gastos Efrain</h1>
+    <h1 style="font-size: 24px;">Mis Gastos</h1>
     <button onclick="showScreen('screen-settings')" style="background:none; border:none; font-size:24px; cursor:pointer">⚙️</button>
   </div>
   <div class="stats" id="stats-area"></div>
@@ -49,9 +50,10 @@
     <button onclick="showScreen('screen-main')" style="background:none; border:none; color:var(--text); font-size:20px;">← Volver</button>
   </div>
   <div style="padding: 20px;">
-    <p style="color:var(--text2); margin-bottom:10px;">API Key de Gemini:</p>
-    <input type="password" id="apikey-input" class="form-input" oninput="localStorage.setItem('gemini_key', this.value)">
-    <button class="btn" style="background:var(--danger); color:#fff; margin-top:20px;" onclick="if(confirm('¿Borrar todo?')){localStorage.clear(); location.reload();}">Borrar todos los datos</button>
+    <p style="color:var(--text2); margin-bottom:10px;">API Key de Google AI Studio:</p>
+    <input type="password" id="apikey-input" class="form-input" placeholder="Pega tu clave aquí" oninput="localStorage.setItem('gemini_key', this.value.trim())">
+    <p style="font-size: 12px; color: var(--text2); margin-top: -10px; margin-bottom: 20px;">Tu clave se guarda solo en tu móvil.</p>
+    <button class="btn" style="background:var(--danger); color:#fff;" onclick="if(confirm('¿Borrar todo?')){localStorage.clear(); location.reload();}">Borrar todos los datos</button>
   </div>
 </div>
 
@@ -60,7 +62,7 @@
     <div class="scan-area">
       <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)">
       <button class="btn" style="background:var(--bg); color:#fff" onclick="document.getElementById('file-input').click()">📷 ESCANEAR TICKET</button>
-      <div id="scan-status" style="margin-top:15px; font-size:14px;"></div>
+      <div id="scan-status" style="margin-top:15px; font-size:14px; font-weight: 500;"></div>
     </div>
     <input type="text" id="f-name" class="form-input" placeholder="Establecimiento">
     <input type="number" id="f-amount" class="form-input" placeholder="Importe (€)" step="0.01">
@@ -81,14 +83,25 @@ function showScreen(id) {
 }
 
 function render() {
-  const total = expenses.reduce((s,e) => s + e.amount, 0);
+  const total = expenses.reduce((s,e) => s + parseFloat(e.amount), 0);
   document.getElementById('stats-area').innerHTML = `<div class="stat-card"><div style="font-size:22px; font-weight:700">€${total.toFixed(2)}</div><div style="color:var(--text2); font-size:12px">Total Gastado</div></div>`;
   const list = document.getElementById('expense-list');
-  list.innerHTML = expenses.length ? expenses.map(e => `
+  list.innerHTML = expenses.length ? expenses.map((e, index) => `
     <div class="expense-item">
       <div><strong>${e.name}</strong><br><small style="color:var(--text2)">${e.date}</small></div>
-      <div style="font-weight:700; color:var(--accent)">€${e.amount.toFixed(2)}</div>
+      <div style="text-align:right">
+        <div style="font-weight:700; color:var(--accent)">€${parseFloat(e.amount).toFixed(2)}</div>
+        <button onclick="deleteExpense(${index})" style="background:none; border:none; color:var(--danger); font-size:10px; cursor:pointer">Eliminar</button>
+      </div>
     </div>`).reverse().join('') : '<p style="text-align:center; color:var(--text2); margin-top:40px;">No hay gastos guardados</p>';
+}
+
+function deleteExpense(i) {
+    if(confirm('¿Eliminar este gasto?')) {
+        expenses.splice(i, 1);
+        localStorage.setItem('efrain_expenses', JSON.stringify(expenses));
+        render();
+    }
 }
 
 function openAddSheet() {
@@ -101,9 +114,9 @@ function openAddSheet() {
 
 function saveExpense() {
   const name = document.getElementById('f-name').value;
-  const amount = parseFloat(document.getElementById('f-amount').value);
+  const amount = document.getElementById('f-amount').value;
   const date = document.getElementById('f-date').value;
-  if(!name || isNaN(amount)) return alert('Rellena establecimiento e importe');
+  if(!name || !amount) return alert('Rellena establecimiento e importe');
   expenses.push({ name, amount, date });
   localStorage.setItem('efrain_expenses', JSON.stringify(expenses));
   document.getElementById('overlay-add').classList.remove('open');
@@ -114,49 +127,60 @@ async function handleImage(e) {
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = async (ev) => await scanWithGemini(ev.target.result);
+  reader.onload = async (ev) => await startScanning(ev.target.result);
   reader.readAsDataURL(file);
 }
 
-async function scanWithGemini(url) {
-  const key = localStorage.getItem('gemini_key');
-  if(!key) return alert('Configura la API Key en Ajustes');
-  const status = document.getElementById('scan-status');
-  status.innerHTML = '<span class="spinner"></span> Analizando con Gemini 1.5 Pro...';
-  
-  const base64 = url.split(',')[1];
-  try {
-    // CAMBIO CLAVE: Usamos v1 y gemini-1.5-pro para evitar el error de disponibilidad
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=${key}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { text: "Eres un experto en lectura de tickets. Analiza esta imagen y devuelve estrictamente un objeto JSON con el siguiente formato: {\"name\":\"Nombre Tienda\",\"amount\":0.00,\"date\":\"YYYY-MM-DD\"}. Si no ves la fecha usa la de hoy." },
-          { inline_data: { mime_type: "image/jpeg", data: base64 } }
-        ]}]
-      })
+async function startScanning(base64Data) {
+    const key = localStorage.getItem('gemini_key');
+    if(!key) return alert('Por favor, configura tu API Key en Ajustes (icono de engranaje).');
+    
+    const status = document.getElementById('scan-status');
+    const base64 = base64Data.split(',')[1];
+    
+    // Lista de modelos a intentar por orden
+    const models = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro-vision"];
+    
+    for (let model of models) {
+        status.innerHTML = `<span class="spinner"></span> Intentando con ${model}...`;
+        try {
+            const result = await callGemini(model, base64, key);
+            if (result) {
+                document.getElementById('f-name').value = result.name || '';
+                document.getElementById('f-amount').value = result.amount || '';
+                document.getElementById('f-date').value = result.date || '';
+                status.innerHTML = '<span style="color:var(--green)">✅ ¡Conseguido!</span>';
+                return; // Éxito, salimos del bucle
+            }
+        } catch (e) {
+            console.log(`Fallo con ${model}:`, e);
+        }
+    }
+    status.innerHTML = '<span style="color:var(--danger)">❌ No se pudo leer. Intenta sacar la foto más cerca.</span>';
+}
+
+async function callGemini(modelName, base64, key) {
+    const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${key}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ parts: [
+                { text: "Analiza la imagen y devuelve SOLO un JSON (sin markdown) con este formato: {\"name\":\"Nombre Tienda\",\"amount\":12.50,\"date\":\"YYYY-MM-DD\"}. Si no ves la fecha, usa la de hoy." },
+                { inline_data: { mime_type: "image/jpeg", data: base64 } }
+            ]}]
+        })
     });
     
-    const data = await res.json();
+    const data = await response.json();
+    if (!data.candidates || !data.candidates[0]) return null;
     
-    if (data.error) {
-        throw new Error(data.error.message);
-    }
-
-    let rawText = data.candidates[0].content.parts[0].text;
-    const jsonStr = rawText.substring(rawText.indexOf('{'), rawText.lastIndexOf('}') + 1);
-    const result = JSON.parse(jsonStr);
-
-    document.getElementById('f-name').value = result.name || '';
-    document.getElementById('f-amount').value = result.amount || '';
-    document.getElementById('f-date').value = result.date || '';
-    status.innerHTML = '<span style="color:var(--green)">✅ Procesado con éxito</span>';
-  } catch(err) {
-    console.error(err);
-    status.innerHTML = `<span style="color:var(--danger)">❌ Reintenta con otra foto: ${err.message.substring(0, 30)}...</span>`;
-  }
+    let text = data.candidates[0].content.parts[0].text;
+    // Limpiar el texto por si la IA devuelve markdown ```json ... ```
+    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    return JSON.parse(text);
 }
+
 render();
 </script>
 </body>
