@@ -1,167 +1,38 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Efrain Gastos</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #111113; --bg2: #1c1c1f; --bg3: #26262a;
-    --text: #f0f0f0; --text2: #9a9a9a;
-    --accent: #4a90d9; --danger: #ff4444; --green: #27ae60; --purple: #9b59b6;
-    --radius: 14px; --radius-sm: 8px;
-  }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
-  .screen { display: none; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; }
-  .screen.active { display: flex; }
-  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; }
-  .header-title { font-size: 28px; font-weight: 700; }
-  .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--bg2); border: none; color: var(--text); cursor: pointer; }
-  .stats { display: flex; gap: 8px; padding: 0 16px 12px; }
-  .stat-card { flex: 1; background: var(--bg2); border-radius: var(--radius); padding: 12px; text-align: center; }
-  .stat-val { font-size: 18px; font-weight: 700; }
-  .stat-label { font-size: 11px; color: var(--text2); }
-  .list { flex: 1; overflow-y: auto; padding: 0 16px 80px; }
-  .expense-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border-radius: var(--radius); padding: 12px; margin-bottom: 8px; }
-  .fab { position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); border: none; color: #fff; font-size: 28px; cursor: pointer; z-index: 50; }
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 100; align-items: flex-end; }
-  .overlay.open { display: flex; }
-  .sheet { background: var(--bg2); border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-height: 90vh; overflow-y: auto; }
-  .form-group { margin-bottom: 12px; }
-  .form-label { font-size: 13px; color: var(--text2); margin-bottom: 4px; display: block; }
-  .form-input { width: 100%; background: var(--bg3); border: none; border-radius: var(--radius-sm); padding: 12px; color: var(--text); outline: none; }
-  .btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); border: none; font-weight: 600; cursor: pointer; margin-top: 10px; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .scan-area { background: var(--bg3); border-radius: var(--radius); padding: 16px; text-align: center; margin-bottom: 15px; }
-  .scan-preview { width: 100%; max-height: 150px; object-fit: contain; display: none; border-radius: 8px; margin-bottom: 10px; }
-  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff3; border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
-</head>
-<body>
+<!-- saved from url=(0054)https://smart-expense-hub-5.preview.emergentagent.com/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style id="react-native-stylesheet"></style>
+    
+    <meta httpequiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Efrain Gastos</title>
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  <style id="expo-generated-fonts">@font-face{font-family:"ionicons";src:url("/assets/?unstable_path=.%2Fnode_modules%2F%40expo%2Fvector-icons%2Fbuild%2Fvendor%2Freact-native-vector-icons%2FFonts/Ionicons.ttf");font-display:auto}</style></head>
 
-<div class="screen active" id="screen-main">
-  <div class="header">
-    <div class="header-title">Efrain</div>
-    <button class="icon-btn" onclick="showScreen('screen-settings')">⚙️</button>
-  </div>
-  <div class="stats" id="stats-area"></div>
-  <div class="list" id="expense-list"></div>
-  <button class="fab" onclick="openAddSheet()">＋</button>
-</div>
+  <body>
+    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"><div class="css-view-g5y9jx r-flex-13awgt0"><div class="css-view-g5y9jx" style="flex: 1 1 0%; padding: 0px;"><div class="css-view-g5y9jx r-backgroundColor-1mgbua0 r-flex-13awgt0" style="padding: 0px;"><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-paddingBlock-w7s2jr r-paddingInline-u9wvl5"><div class="css-view-g5y9jx"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-zz5t5d r-fontWeight-vw2c0b">Efrain</div><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1b43r93 r-marginTop-1bymd8e">Asistente de Gastos</div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-16uyjmq r-height-1ugchlj r-justifyContent-1777fci r-marginRight-1kb76zh r-width-usgzl9" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 22px; color: rgb(74, 144, 217); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-16uyjmq r-height-1ugchlj r-justifyContent-1777fci r-marginRight-1kb76zh r-width-usgzl9" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 22px; color: rgb(255, 68, 68); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-16uyjmq r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 24px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div></div><div class="css-view-g5y9jx r-flexDirection-18u37iz r-marginBottom-1ifxtd0 r-paddingInline-3o4zer"><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flex-13awgt0 r-marginInline-1537yvj r-padding-nsbfu8"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 24px; color: rgb(74, 144, 217); font-family: ionicons; font-weight: normal; font-style: normal;"></div><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginTop-knv0ih">€166.00</div><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn r-marginTop-14gqq1x">8 gastos</div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flex-13awgt0 r-marginInline-1537yvj r-padding-nsbfu8"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 24px; color: rgb(155, 89, 182); font-family: ionicons; font-weight: normal; font-style: normal;"></div><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginTop-knv0ih">€137.60</div><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn r-marginTop-14gqq1x">6 tarjeta</div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flex-13awgt0 r-marginInline-1537yvj r-padding-nsbfu8"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 24px; color: rgb(39, 174, 96); font-family: ionicons; font-weight: normal; font-style: normal;"></div><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginTop-knv0ih">€28.40</div><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn r-marginTop-14gqq1x">2 efectivo</div></div></div><div class="css-view-g5y9jx r-flexDirection-18u37iz r-marginBottom-1ifxtd0 r-paddingInline-3pj75a"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-y47klf r-flexDirection-18u37iz r-marginRight-1kb76zh r-paddingBlock-ytbthy r-paddingInline-3pj75a r-backgroundColor-1euwi4f" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-fontSize-1b43r93 r-marginLeft-13hce6t r-color-jwli3a r-fontWeight-1kfrs79">Todos</div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-y47klf r-flexDirection-18u37iz r-marginRight-1kb76zh r-paddingBlock-ytbthy r-paddingInline-3pj75a" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 16px; color: rgb(136, 136, 136); font-family: ionicons; font-weight: normal; font-style: normal;"></div><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1b43r93 r-marginLeft-13hce6t">Tarjeta</div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-y47klf r-flexDirection-18u37iz r-marginRight-1kb76zh r-paddingBlock-ytbthy r-paddingInline-3pj75a" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 16px; color: rgb(136, 136, 136); font-family: ionicons; font-weight: normal; font-style: normal;"></div><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1b43r93 r-marginLeft-13hce6t">Efectivo</div></div></div><div class="css-view-g5y9jx r-WebkitOverflowScrolling-150rngu r-flexDirection-eqz5dr r-flexGrow-16y2uox r-flexShrink-1wbh5a2 r-overflowX-11yh6sk r-overflowY-1rnoaur r-transform-agouwx r-flex-13awgt0 r-paddingInline-3pj75a"><div class="css-view-g5y9jx r-WebkitOverflowScrolling-150rngu r-flexDirection-eqz5dr r-flexGrow-16y2uox r-flexShrink-1wbh5a2 r-overflowX-11yh6sk r-overflowY-1rnoaur r-transform-agouwx r-flex-13awgt0 r-paddingInline-3pj75a"><div class="css-view-g5y9jx"><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-bis4jr" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">BURGER KING</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">04/03/2026</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(255, 99, 132);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Comida</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€23.10</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-bis4jr" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">Moraleja Energy, S.L.</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">16/03/2026</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(54, 162, 235);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Gasolina</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€20.00</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-bis4jr" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">Tutto Communications Miami International Airport</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">04/03/2026</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(255, 159, 64);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Varios</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€35.00</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-bis4jr" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">Burger King</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">04/03/2026</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(255, 99, 132);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Comida</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€23.10</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-xydr3q" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">TAXI DEL A.P.C DE MADRID</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">04/03/2026</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(255, 206, 86);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Transporte</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€28.40</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-bis4jr" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">Gasto Manual Test</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">22/03/2026</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(153, 102, 255);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Material</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€15.50</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-xydr3q" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">Establecimiento desconocido</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">Sin fecha</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(255, 159, 64);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Varios</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€0.00</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-alignItems-1awozwy r-backgroundColor-1che71a r-borderRadius-1867qdf r-flexDirection-18u37iz r-justifyContent-1wtj0ep r-marginBottom-6gpygo r-padding-nsbfu8"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flex-13awgt0 r-flexDirection-18u37iz" style="transition-duration: 0s;"><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-borderRadius-1q9bdsx r-height-1ugchlj r-justifyContent-1777fci r-width-usgzl9 r-backgroundColor-bis4jr" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div><div class="css-view-g5y9jx r-flex-13awgt0 r-marginInlineStart-1cwvpvk"><div dir="auto" class="css-text-146c3p1 r-maxWidth-dnmrzs r-overflow-1udh08x r-textOverflow-1udbk01 r-whiteSpace-3s2u2q r-wordWrap-1iln25a r-color-jwli3a r-fontSize-ubezar r-fontWeight-1kfrs79">SUPERMERCADO MADRID</div><div class="css-view-g5y9jx r-alignItems-1awozwy r-flexDirection-18u37iz r-marginTop-14gqq1x"><div dir="auto" class="css-text-146c3p1 r-color-xdvzot r-fontSize-1enofrn">15/12/2024</div><div class="css-view-g5y9jx r-borderRadius-1xfd6ze r-marginLeft-1jkjb r-paddingBlock-1559e4e r-paddingInline-is05cd" style="background-color: rgb(255, 159, 64);"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-10x49cs r-fontWeight-1kfrs79">Varios</div></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-flexDirection-18u37iz" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-color-jwli3a r-fontSize-1i10wst r-fontWeight-vw2c0b r-marginRight-1kb76zh">€20.90</div><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 20px; color: rgb(102, 102, 102); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div><div class="css-view-g5y9jx r-height-o52ifk"></div></div></div></div><div tabindex="0" class="css-view-g5y9jx r-transitionProperty-1i6wzkk r-userSelect-lrvibr r-cursor-1loqt21 r-touchAction-1otgn73 r-alignItems-1awozwy r-backgroundColor-1euwi4f r-borderRadius-1llaxt6 r-bottom-1u8kdu r-height-uvuy5l r-justifyContent-1777fci r-position-u8s1d r-right-yj30ev r-width-cfp7ip" style="transition-duration: 0s;"><div dir="auto" class="css-text-146c3p1 r-userSelect-lrvibr" style="font-size: 32px; color: rgb(255, 255, 255); font-family: ionicons; font-weight: normal; font-style: normal;"></div></div></div></div></div></div>
+  <script src="./Efrain Gastos_files/entry.bundle" defer=""></script><script defer="" src="./Efrain Gastos_files/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon="{&quot;version&quot;:&quot;2024.11.0&quot;,&quot;token&quot;:&quot;7f7b0fd8732c4326aae4b9d58d5c514a&quot;,&quot;server_timing&quot;:{&quot;name&quot;:{&quot;cfCacheStatus&quot;:true,&quot;cfEdge&quot;:true,&quot;cfExtPri&quot;:true,&quot;cfL4&quot;:true,&quot;cfOrigin&quot;:true,&quot;cfSpeedBrain&quot;:true},&quot;location_startswith&quot;:null}}" crossorigin="anonymous"></script>
 
-<div class="screen" id="screen-settings">
-  <div class="header">
-    <button class="icon-btn" onclick="showScreen('screen-main')">←</button>
-    <div class="header-title" style="font-size:20px">Ajustes</div>
-  </div>
-  <div style="padding:20px">
-    <label class="form-label">Gemini API Key</label>
-    <input type="password" id="apikey-input" class="form-input" placeholder="AIza..." oninput="localStorage.setItem('gemini_key', this.value)">
-    <button class="btn" style="background:var(--bg3); color:var(--text)" onclick="localStorage.clear(); location.reload();">Borrar todo los datos</button>
-  </div>
-</div>
 
-<div class="overlay" id="overlay-add">
-  <div class="sheet">
-    <div class="scan-area">
-      <img id="scan-preview" class="scan-preview">
-      <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)">
-      <button class="btn" style="background:var(--bg); color:var(--text)" onclick="document.getElementById('file-input').click()">📷 Escanear Ticket</button>
-      <div id="scan-status" style="font-size:12px; margin-top:10px; color:var(--text2)"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Establecimiento</label><input type="text" id="f-name" class="form-input"></div>
-    <div class="form-group"><label class="form-label">Importe (€)</label><input type="number" id="f-amount" class="form-input" step="0.01"></div>
-    <div class="form-group"><label class="form-label">Fecha</label><input type="date" id="f-date" class="form-input"></div>
-    <button class="btn btn-primary" onclick="saveExpense()">Guardar</button>
-    <button class="btn" style="background:transparent; color:var(--text2)" onclick="document.getElementById('overlay-add').classList.remove('open')">Cancelar</button>
-  </div>
-</div>
-
-<script>
-let expenses = JSON.parse(localStorage.getItem('efrain_expenses') || '[]');
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  if(id === 'screen-settings') document.getElementById('apikey-input').value = localStorage.getItem('gemini_key') || '';
-  render();
-}
-
-function render() {
-  const total = expenses.reduce((s,e) => s + e.amount, 0);
-  document.getElementById('stats-area').innerHTML = `<div class="stat-card"><div class="stat-val">€${total.toFixed(2)}</div><div class="stat-label">Total acumulado</div></div>`;
-  const list = document.getElementById('expense-list');
-  list.innerHTML = expenses.length ? expenses.map(e => `
-    <div class="expense-item">
-      <div><strong>${e.name}</strong><br><small style="color:var(--text2)">${e.date}</small></div>
-      <div style="font-weight:700">€${e.amount.toFixed(2)}</div>
-    </div>`).join('') : '<div style="text-align:center; padding:40px; color:var(--text2)">No hay gastos</div>';
-}
-
-function openAddSheet() {
-  document.getElementById('f-name').value = '';
-  document.getElementById('f-amount').value = '';
-  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('scan-preview').style.display = 'none';
-  document.getElementById('scan-status').innerHTML = '';
-  document.getElementById('overlay-add').classList.add('open');
-}
-
-function saveExpense() {
-  const name = document.getElementById('f-name').value;
-  const amount = parseFloat(document.getElementById('f-amount').value);
-  const date = document.getElementById('f-date').value;
-  if(!name || isNaN(amount)) return alert('Rellena los campos');
-  expenses.push({ name, amount, date });
-  localStorage.setItem('efrain_expenses', JSON.stringify(expenses));
-  document.getElementById('overlay-add').classList.remove('open');
-  render();
-}
-
-async function handleImage(e) {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    const dataUrl = ev.target.result;
-    document.getElementById('scan-preview').src = dataUrl;
-    document.getElementById('scan-preview').style.display = 'block';
-    await scanWithGemini(dataUrl);
-  };
-  reader.readAsDataURL(file);
-}
-
-async function scanWithGemini(url) {
-  const key = localStorage.getItem('gemini_key');
-  if(!key) return alert('Pon tu API Key en Ajustes');
-  const status = document.getElementById('scan-status');
-  status.innerHTML = '<span class="spinner"></span> Analizando con Gemini 1.5 Flash...';
-  
-  const base64 = url.split(',')[1];
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-      method: 'POST',
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { text: "Analiza el ticket y devuelve SOLO un JSON: {\"name\":\"tienda\",\"amount\":0.00,\"date\":\"YYYY-MM-DD\"}" },
-          { inline_data: { mime_type: "image/jpeg", data: base64 } }
-        ]}]
-      })
-    });
-    const data = await res.json();
-    const text = data.candidates[0].content.parts[0].text;
-    const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
-    document.getElementById('f-name').value = json.name;
-    document.getElementById('f-amount').value = json.amount;
-    document.getElementById('f-date').value = json.date;
-    status.innerHTML = '<span style="color:var(--green)">✅ Éxito</span>';
-  } catch(err) {
-    status.innerHTML = '<span style="color:var(--danger)">❌ Error al leer</span>';
-  }
-}
-render();
-</script>
-</body>
-</html>
+<div></div><div></div><div style="position: fixed; left: 0px; top: 0px; width: 0px; height: 0px; z-index: -1; overflow: hidden; visibility: hidden; transition-duration: 0.05s; transition-property: padding; transition-delay: 0s; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);"></div></body></html>
