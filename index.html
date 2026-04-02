@@ -144,7 +144,7 @@
     <div class="settings-section">
       <div class="settings-section-title">Info</div>
       <div class="settings-item"><span>Total gastos guardados</span><span id="stat-count" style="color:var(--text2)">0</span></div>
-      <div class="settings-item"><span>Versión</span><span style="color:var(--text2)">1.0.1</span></div>
+      <div class="settings-item"><span>Versión</span><span style="color:var(--text2)">1.1.0</span></div>
     </div>
   </div>
 </div>
@@ -367,7 +367,7 @@ function saveExpense() {
   const notes  = document.getElementById('f-notes').value.trim();
   const id     = document.getElementById('f-id').value;
 
-  if (!name)               { showToast('Escribe el nombre del establecimiento'); return; }
+  if (!name)                 { showToast('Escribe el nombre del establecimiento'); return; }
   if (isNaN(amount)||amount<0) { showToast('Introduce un importe válido'); return; }
 
   if (id) {
@@ -454,7 +454,7 @@ async function handleImage(event) {
 
 async function scanWithGemini(dataUrl) {
   const apiKey = localStorage.getItem('gemini_key');
-  if (!apiKey) { showToast('Configura tu API key de Gemini en Ajustes ⚙️'); return; }
+  if (!apiKey) { showToast('Configura tu API key en Ajustes ⚙️'); return; }
 
   const resultEl = document.getElementById('scan-result');
   resultEl.style.display = 'block';
@@ -464,9 +464,7 @@ async function scanWithGemini(dataUrl) {
   const base64 = dataUrl.split(',')[1];
   const mime   = dataUrl.split(';')[0].split(':')[1];
 
-  const promptText = `Analiza este ticket/recibo. Extrae: 1. Establecimiento. 2. Importe total. 3. Fecha (formato YYYY-MM-DD). 4. Categoría (Comida, Gasolina, Transporte, Material, Varios, Salud, Ocio, Ropa). 5. Una nota corta.
-  Responde ÚNICAMENTE en este formato JSON, sin textos adicionales:
-  {"name": "nombre", "amount": 00.00, "date": "YYYY-MM-DD", "category": "Categoría", "notes": ""}`;
+  const promptText = "Analiza este ticket. Responde SOLO en JSON con: { \"name\": \"establecimiento\", \"amount\": 00.00, \"date\": \"YYYY-MM-DD\", \"category\": \"Comida o Gasolina o Transporte o Material o Varios o Salud o Ocio o Ropa\", \"notes\": \"\" }";
 
   try {
     const resp = await fetch(
@@ -486,7 +484,6 @@ async function scanWithGemini(dataUrl) {
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
 
-    // Limpieza de la respuesta para evitar errores si Gemini devuelve ```json ... ```
     let textResult = data.candidates[0].content.parts[0].text;
     textResult = textResult.replace(/```json/g, "").replace(/```/g, "").trim();
     
