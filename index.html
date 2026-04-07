@@ -1305,3 +1305,4 @@ window.exportPDF=function(){
       didDrawCell:data=>{if(data.section==='body'&&data.column.index===2){const cat=data.cell.raw;const rgb=catRGB[cat];if(rgb){doc.setFillColor(...rgb);doc.roundedRect(data.cell.x+1,data.cell.y+1.5,data.cell.width-2,data.cell.height-3,1,1,'F');doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text(cat,data.cell.x+data.cell.width/2,data.cell.y+data.cell.height/2+0.5,'center');}}},
     });
     doc.setTextColor(50,50,70);do
+      
