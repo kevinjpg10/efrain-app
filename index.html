@@ -1199,6 +1199,92 @@ window.exportPDF=function(){
   });
   doc.save('Efrain_Gastos_'+month.replace(' ','_')+'.pdf');showToast('📄 PDF descargado ✓');
 };
+  <script type="module">
+  // 1. Importaciones necesarias de Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. TUS CREDENCIALES (Cópialas de tu consola de Firebase)
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY"AIzaSyBiditmELuUBE4F30qQJZqpwp6p-sMI__Q,
+    authDomain: "mis-gastos-pro-eedcf.firebaseapp.com",
+    projectId: "mis-gastos-pro-eedcf",
+    storageBucket: "mis-gastos-pro-eedcf.firebasestorage.app",
+    messagingSenderId: "390773093413",
+    appId: "1:390773093413:web:b5db4719f9945a0984fbcc"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // --- FUNCIÓN CRÍTICA: VER FOTO BASE64 ---
+  // Esta función soluciona el problema de los vínculos rotos
+  window.verFotoTicket = function(base64Data) {
+    if (!base64Data || !base64Data.startsWith('data:image')) {
+        alert("No hay foto disponible o el formato es incorrecto.");
+        return;
+    }
+    
+    // Abrimos una ventana nueva y escribimos la imagen directamente
+    const nuevaVentana = window.open();
+    nuevaVentana.document.write(`
+        <html>
+            <head><title>Ticket</title></head>
+            <body style="margin:0; background: #000; display: flex; align-items: center; justify-content: center;">
+                <img src="${base64Data}" style="max-width: 100%; max-height: 100vh;">
+            </body>
+        </html>
+    `);
+  };
+
+  // --- LÓGICA DE LA APP ---
+
+  // Detectar usuario
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('screen-auth').classList.remove('active');
+      document.getElementById('screen-main').classList.add('active');
+      document.getElementById('user-email-display').innerText = user.email;
+      cargarGastos(user.uid);
+    } else {
+      document.getElementById('screen-auth').classList.add('active');
+      document.getElementById('screen-main').classList.remove('active');
+    }
+  });
+
+  // Función para cargar gastos y renderizar el botón de foto correctamente
+  function cargarGastos(uid) {
+    const q = query(collection(db, "gastos"), where("userId", "==", uid));
+    onSnapshot(q, (snapshot) => {
+      const lista = document.getElementById('expense-list');
+      lista.innerHTML = '';
+      snapshot.forEach((doc) => {
+        const gasto = doc.data();
+        const item = document.createElement('div');
+        item.className = 'expense-item';
+        
+        // Aquí está el truco: usamos onclick="verFotoTicket" en lugar de un <a href>
+        item.innerHTML = `
+          <div class="exp-info">
+            <div class="exp-name">${gasto.name}</div>
+            <div class="exp-date">${gasto.date}</div>
+          </div>
+          <div class="exp-right">
+            <div class="exp-amount">${gasto.amount}€</div>
+            ${gasto.photo ? `<button onclick="verFotoTicket('${gasto.photo}')" style="background:none; border:none; cursor:pointer;">📸</button>` : ''}
+          </div>
+        `;
+        lista.appendChild(item);
+      });
+    });
+  }
+
+  // Hacer funciones accesibles globalmente para los botones del HTML
+  window.doLogout = () => signOut(auth);
+
 
 </script>
 </body>
