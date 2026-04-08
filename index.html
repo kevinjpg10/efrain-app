@@ -1199,62 +1199,7 @@ window.exportPDF=function(){
   });
   doc.save('Efrain_Gastos_'+month.replace(' ','_')+'.pdf');showToast('📄 PDF descargado ✓');
 };
-  <script type="module">
-  // 1. Importaciones necesarias de Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  // 2. TUS CREDENCIALES (Cópialas de tu consola de Firebase)
-  const firebaseConfig = {
-    apiKey: "TU_API_KEY"AIzaSyBiditmELuUBE4F30qQJZqpwp6p-sMI__Q,
-    authDomain: "mis-gastos-pro-eedcf.firebaseapp.com",
-    projectId: "mis-gastos-pro-eedcf",
-    storageBucket: "mis-gastos-pro-eedcf.firebasestorage.app",
-    messagingSenderId: "390773093413",
-    appId: "1:390773093413:web:b5db4719f9945a0984fbcc"
-  };
-
-// 2. INICIALIZACIÓN
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // 3. FUNCIÓN PARA VER LA FOTO (Solución al Base64)
-    // Usamos window. para que el HTML pueda ver la función
-    window.verFotoTicket = function(base64Data) {
-        if (!base64Data) {
-            alert("No hay imagen guardada para este gasto.");
-            return;
-        }
-        const imgWindow = window.open("");
-        imgWindow.document.write(`
-            <html>
-                <head><title>Vista de Ticket</title></head>
-                <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center;">
-                    <img src="${base64Data}" style="max-width:100%; max-height:100vh; object-fit:contain;">
-                </body>
-            </html>
-        `);
-    };
-
-    // 4. CONTROL DE SESIÓN
-    onAuthStateChanged(auth, (user) => {
-        const main = document.getElementById('screen-main');
-        const login = document.getElementById('screen-auth');
-        
-        if (user) {
-            if(login) login.style.display = 'none';
-            if(main) main.classList.add('active');
-            console.log("Sesión iniciada:", user.email);
-        } else {
-            if(login) login.style.display = 'flex';
-            if(main) main.classList.remove('active');
-        }
-    });
-
-    // Función de Logout
-    window.doLogout = () => signOut(auth);
+ 
 
 </script>
 </body>
