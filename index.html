@@ -1215,75 +1215,46 @@ window.exportPDF=function(){
     appId: "1:390773093413:web:b5db4719f9945a0984fbcc"
   };
 
-  // Inicializar Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+// 2. INICIALIZACIÓN
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-  // --- FUNCIÓN CRÍTICA: VER FOTO BASE64 ---
-  // Esta función soluciona el problema de los vínculos rotos
-  window.verFotoTicket = function(base64Data) {
-    if (!base64Data || !base64Data.startsWith('data:image')) {
-        alert("No hay foto disponible o el formato es incorrecto.");
-        return;
-    }
-    
-    // Abrimos una ventana nueva y escribimos la imagen directamente
-    const nuevaVentana = window.open();
-    nuevaVentana.document.write(`
-        <html>
-            <head><title>Ticket</title></head>
-            <body style="margin:0; background: #000; display: flex; align-items: center; justify-content: center;">
-                <img src="${base64Data}" style="max-width: 100%; max-height: 100vh;">
-            </body>
-        </html>
-    `);
-  };
+    // 3. FUNCIÓN PARA VER LA FOTO (Solución al Base64)
+    // Usamos window. para que el HTML pueda ver la función
+    window.verFotoTicket = function(base64Data) {
+        if (!base64Data) {
+            alert("No hay imagen guardada para este gasto.");
+            return;
+        }
+        const imgWindow = window.open("");
+        imgWindow.document.write(`
+            <html>
+                <head><title>Vista de Ticket</title></head>
+                <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center;">
+                    <img src="${base64Data}" style="max-width:100%; max-height:100vh; object-fit:contain;">
+                </body>
+            </html>
+        `);
+    };
 
-  // --- LÓGICA DE LA APP ---
-
-  // Detectar usuario
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById('screen-auth').classList.remove('active');
-      document.getElementById('screen-main').classList.add('active');
-      document.getElementById('user-email-display').innerText = user.email;
-      cargarGastos(user.uid);
-    } else {
-      document.getElementById('screen-auth').classList.add('active');
-      document.getElementById('screen-main').classList.remove('active');
-    }
-  });
-
-  // Función para cargar gastos y renderizar el botón de foto correctamente
-  function cargarGastos(uid) {
-    const q = query(collection(db, "gastos"), where("userId", "==", uid));
-    onSnapshot(q, (snapshot) => {
-      const lista = document.getElementById('expense-list');
-      lista.innerHTML = '';
-      snapshot.forEach((doc) => {
-        const gasto = doc.data();
-        const item = document.createElement('div');
-        item.className = 'expense-item';
+    // 4. CONTROL DE SESIÓN
+    onAuthStateChanged(auth, (user) => {
+        const main = document.getElementById('screen-main');
+        const login = document.getElementById('screen-auth');
         
-        // Aquí está el truco: usamos onclick="verFotoTicket" en lugar de un <a href>
-        item.innerHTML = `
-          <div class="exp-info">
-            <div class="exp-name">${gasto.name}</div>
-            <div class="exp-date">${gasto.date}</div>
-          </div>
-          <div class="exp-right">
-            <div class="exp-amount">${gasto.amount}€</div>
-            ${gasto.photo ? `<button onclick="verFotoTicket('${gasto.photo}')" style="background:none; border:none; cursor:pointer;">📸</button>` : ''}
-          </div>
-        `;
-        lista.appendChild(item);
-      });
+        if (user) {
+            if(login) login.style.display = 'none';
+            if(main) main.classList.add('active');
+            console.log("Sesión iniciada:", user.email);
+        } else {
+            if(login) login.style.display = 'flex';
+            if(main) main.classList.remove('active');
+        }
     });
-  }
 
-  // Hacer funciones accesibles globalmente para los botones del HTML
-  window.doLogout = () => signOut(auth);
+    // Función de Logout
+    window.doLogout = () => signOut(auth);
 
 </script>
 </body>
