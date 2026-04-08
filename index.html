@@ -1481,4 +1481,15 @@ window.exportPDF=function(){
     doc.autoTable({startY:yy,head:[['Fecha','Establecimiento','Categoría','Pago','Importe']],body:rows,foot:[['','','','TOTAL',sym+tot.toFixed(2)]],headStyles:{fillColor:[25,25,40],textColor:[79,142,247],fontStyle:'bold',fontSize:8.5},footStyles:{fillColor:[15,15,25],textColor:[245,158,11],fontStyle:'bold',fontSize:9},bodyStyles:{fillColor:[19,19,26],textColor:[215,215,225],fontSize:8},alternateRowStyles:{fillColor:[23,23,32]},columnStyles:{0:{cellWidth:24},1:{cellWidth:66},2:{cellWidth:28},3:{cellWidth:24},4:{cellWidth:24,halign:'right'}},margin:{left:14,right:14},theme:'grid',styles:{lineColor:[35,35,50],lineWidth:0.3},
       didDrawCell:data=>{if(data.section==='body'&&data.column.index===2){const cat=data.cell.raw;const rgb=catRGB[cat];if(rgb){doc.setFillColor(...rgb);doc.roundedRect(data.cell.x+1,data.cell.y+1.5,data.cell.width-2,data.cell.height-3,1,1,'F');doc.setTextColor(255,255,255);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text(cat,data.cell.x+data.cell.width/2,data.cell.y+data.cell.height/2+0.5,'center');}}},
     });
-    doc.setTextColor(50,50,70);do
+    doc.setTextColor(50,50,70);doc.setFontSize(7.5);doc.text('Efrain Gastos v5.0 Firebase — '+c.flag+' '+c.name,105,291,'center');
+  });
+  doc.save('Efrain_Gastos_'+month.replace(' ','_')+'.pdf');showToast('📄 PDF descargado ✓');
+};
+
+</script>
+</body>
+</html>
+
+
+
+    
