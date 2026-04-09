@@ -395,7 +395,7 @@ select.form-input option{background:var(--bg2)}
         <div style="font-weight:600;margin-bottom:4px">Escanear ticket con Gemini AI</div>
         <div style="font-size:12px">La IA leerá y rellenará los campos</div>
       </div>
-      <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImageSelected(event)">
+      <input type="file" id="file-input" accept="image/*,image/heic,image/heif" style="display:none" onchange="handleImageSelected(event)">
       <button class="btn btn-ghost" style="width:100%;margin-top:10px;margin-bottom:0;padding:9px;font-size:13px" onclick="document.getElementById('file-input').click()">📷 Cámara / Galería</button>
       <div class="scan-status" id="scan-status"></div>
     </div>
@@ -556,7 +556,7 @@ import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, s
 
 // ── FIREBASE CONFIG ──
 const firebaseConfig = {
-  apiKey: "AIzaSyBiditmELuUBE4F30qQJZqpwp6p-sMI__Q",
+  apiKey: "AIzaSyBiditmEluUBE4F30qQJZqpwp6p-sMI__Q",
   authDomain: "mis-gastos-pro-eedcf.firebaseapp.com",
   projectId: "mis-gastos-pro-eedcf",
   storageBucket: "mis-gastos-pro-eedcf.appspot.com",
@@ -923,16 +923,31 @@ async function compressImage(dataUrl,maxPx,quality){
   return new Promise(resolve=>{
     const img=new Image();
     img.onload=()=>{
-      const cv=document.getElementById('offscreen');
-      let w=img.naturalWidth,h=img.naturalHeight;
-      if(w>maxPx||h>maxPx){if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;}}
-      cv.width=w;cv.height=h;
-      const ctx=cv.getContext('2d');
-      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);
-      ctx.drawImage(img,0,0,w,h);
-      resolve(cv.toDataURL('image/jpeg',quality));
+      try{
+        const cv=document.getElementById('offscreen');
+        let w=img.naturalWidth||800,h=img.naturalHeight||600;
+        if(w>maxPx||h>maxPx){
+          if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
+          else{w=Math.round(w*maxPx/h);h=maxPx;}
+        }
+        w=Math.max(w,1);h=Math.max(h,1);
+        cv.width=w;cv.height=h;
+        const ctx=cv.getContext('2d');
+        ctx.fillStyle='#ffffff';
+        ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img,0,0,w,h);
+        // Always output JPEG — converts HEIC/HEIF from iPhone automatically
+        const out=cv.toDataURL('image/jpeg',quality);
+        resolve(out&&out.length>100?out:dataUrl);
+      }catch(e){
+        console.error('Compress error:',e.message);
+        resolve(dataUrl);
+      }
     };
-    img.onerror=()=>resolve(dataUrl);
+    img.onerror=()=>{
+      console.warn('Image load error, using original');
+      resolve(dataUrl);
+    };
     img.src=dataUrl;
   });
 }
@@ -957,14 +972,28 @@ window.scanWithGemini=async function(dataUrl){
     try{
       const cfg={temperature:0,maxOutputTokens:512};
       if(useJson)cfg.responseMimeType='application/json';
-      const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:'image/jpeg',data:b64}},{text:PROMPTS[pi]}]}],generationConfig:cfg})});
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),30000);
+      const resp=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+key,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:'image/jpeg',data:b64}},{text:PROMPTS[pi]}]}],generationConfig:cfg}),
+        signal:ctrl.signal
+      });
+      clearTimeout(timer);
       if(!resp.ok){const ed=await resp.json().catch(()=>({}));if(resp.status===429){setScanSt('warn','⏳ Límite de API. Espera un momento.');return;}if(resp.status===400||resp.status===401||resp.status===403){setScanSt('error',`❌ Error API (${resp.status}). Ve a Ajustes y prueba la API key.`);return;}continue;}
       const data=await resp.json();
       const raw=(data.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
       console.log(`[${model}][${pi}] RAW:`,raw);
       const parsed=parseGeminiText(raw);
       if(parsed&&(parsed.name||parsed.amount!=null)){fillForm(parsed);setScanSt('success','✅ Ticket leído. Revisa los campos y guarda.');return;}
-    }catch(err){console.error(model,err);}
+    }catch(err){
+      if(err.name==='AbortError'){
+        setScanSt('warn','⏱️ La IA tardó demasiado. Intenta con una foto más pequeña.');
+        return;
+      }
+      console.error(model,err.message);
+    }
   }
   setScanSt('error','❌ No se pudo leer el ticket. Rellena manualmente.');
 };
@@ -1094,7 +1123,7 @@ window.exportExcel=function(){
     const amtCol='Importe ('+sym+')';
     const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
 
-    // Build rows - photo column uses data URL so user can open/save image
+    // Build rows array
     const rows=sorted.map(e=>{
       const row={
         Fecha:e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'Sin fecha',
@@ -1103,7 +1132,7 @@ window.exportExcel=function(){
         'Método de pago':e.payment==='tarjeta'?'Tarjeta':'Efectivo',
         [amtCol]:e.amount,
         Notas:e.notes||'',
-        'Foto ticket':e.photo?'VER FOTO':'Sin foto'
+        'Ver Foto':e.photo?'📷 ABRIR FOTO':''
       };
       return row;
     });
@@ -1117,36 +1146,52 @@ window.exportExcel=function(){
     rows.push({Fecha:'Efectivo',[amtCol]:efe});
 
     const ws=XLSX.utils.json_to_sheet(rows);
+    ws['!cols']=[{wch:14},{wch:32},{wch:14},{wch:16},{wch:14},{wch:28},{wch:14}];
 
-    // Add hyperlinks to photo column (column G = index 6)
-    // Row 2 = first data row (row 1 is header)
+    // Add hyperlinks to photo column (col index 6 = column G)
+    // Each photo is saved as a small HTML file referenced by URL
+    // Excel opens hyperlinks in the default browser - no blocking
     sorted.forEach((e,i)=>{
       if(!e.photo)return;
-      const cellRef=XLSX.utils.encode_cell({r:i+1,c:6}); // G column, 0-indexed
-      if(!ws[cellRef])ws[cellRef]={};
-      // Save photo as a separate HTML file reference via data URL blob
-      // Excel HYPERLINK formula pointing to data URL
-      ws[cellRef].l={Target:e.photo,Tooltip:'Ver foto del ticket: '+e.name};
-      ws[cellRef].v='📷 VER FOTO';
-      ws[cellRef].s={font:{color:{rgb:'4F8EF7'},underline:true}};
+      // Build a self-contained HTML page with the photo
+      const htmlPage='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Ticket: '+
+        e.name.replace(/'/g,"'")+'</title>'+
+        '<style>body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;'+
+        'justify-content:center;min-height:100vh;font-family:sans-serif;color:#fff;}'+
+        'img{max-width:95vw;max-height:85vh;border-radius:12px;box-shadow:0 4px 30px rgba(0,0,0,.8);}'+
+        'h2{margin:12px 0 4px;font-size:18px;}p{color:#aaa;font-size:13px;margin:0 0 12px;}</style>'+
+        '</head><body>'+
+        '<h2>'+e.name+'</h2>'+
+        '<p>'+( e.date?new Date(e.date+'T12:00').toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'}):'' )+
+        ' · '+sym+e.amount.toFixed(2)+' · '+e.category+'</p>'+
+        '<img src="'+e.photo+'" alt="ticket">'+
+        '</body></html>';
+
+      const blob=new Blob([htmlPage],{type:'text/html'});
+      const blobUrl=URL.createObjectURL(blob);
+
+      const cellRef=XLSX.utils.encode_cell({r:i+1,c:6});
+      if(!ws[cellRef])ws[cellRef]={t:'s',v:'📷 ABRIR FOTO'};
+      ws[cellRef].l={Target:blobUrl,Tooltip:'Abrir foto del ticket: '+e.name};
+      ws[cellRef].s={font:{color:{rgb:'4F8EF7'},underline:true,bold:true}};
     });
 
-    ws['!cols']=[{wch:14},{wch:32},{wch:14},{wch:16},{wch:14},{wch:28},{wch:14}];
     XLSX.utils.book_append_sheet(wb,ws,code+' '+sym);
   });
 
-  // Summary sheet
+  // Summary sheet if multiple currencies
   if(Object.keys(groups).length>1){
     const sRows=Object.entries(groups).map(([code,exps])=>{
       const c=CURRENCIES[code]||CURRENCIES.EUR;
-      const withPhoto=exps.filter(e=>e.photo).length;
-      return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,Total:exps.reduce((s,e)=>s+e.amount,0),'Con foto':withPhoto};
+      return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,
+        Total:exps.reduce((s,e)=>s+e.amount,0),
+        'Con foto':exps.filter(e=>e.photo).length};
     });
     const ws=XLSX.utils.json_to_sheet(sRows);
     XLSX.utils.book_append_sheet(wb,ws,'Resumen');
   }
 
-  // iOS + Android compatible download
+  // Download - compatible iOS + Android + Desktop
   const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   const blob=new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob);
@@ -1159,7 +1204,6 @@ window.exportExcel=function(){
   setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
   showToast('📊 Excel descargado ✓');
 };
-
 
 // ── PDF ──
 window.exportPDF=function(){
@@ -1199,7 +1243,6 @@ window.exportPDF=function(){
   });
   doc.save('Efrain_Gastos_'+month.replace(' ','_')+'.pdf');showToast('📄 PDF descargado ✓');
 };
- 
 
 </script>
 </body>
