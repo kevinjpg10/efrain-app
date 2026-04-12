@@ -556,7 +556,7 @@ import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, s
 
 // ── FIREBASE CONFIG ──
 const firebaseConfig = {
-  apiKey: "AIzaSyBiditmEluUBE4F30qQJZqpwp6p-sMI__Q",
+  apiKey: "AIzaSyAcQ2EHScOfKu7hDYErFqbehzclS2BAl7Q ",
   authDomain: "mis-gastos-pro-eedcf.firebaseapp.com",
   projectId: "mis-gastos-pro-eedcf",
   storageBucket: "mis-gastos-pro-eedcf.appspot.com",
@@ -610,7 +610,7 @@ function updatePremiumUI(){
 function openWhatsAppPremium(){
   const email = currentUser ? currentUser.email : 'desconocido';
   const msg = encodeURIComponent('Hola, estoy interesado en activar el Plan Premium de Mis Gastos Pro. Mi correo es: ' + email);
-  const waUrl = 'https://wa.me/34600000000?text=' + msg;
+  const waUrl = 'https://wa.me/34637687764?text=' + msg;
   window.open(waUrl, '_blank');
   document.getElementById('overlay-premium').classList.remove('open');
 }
