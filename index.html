@@ -1167,10 +1167,62 @@ window.downloadPhotoReport=function(){
   showToast('📷 Informe de fotos descargado');
 };
 
-window.exportExcel=function(){
-  if(!expenses.length){showToast('No hay gastos para exportar');return;}
-  const month=monthLabel(),wb=XLSX.utils.book_new();
-  const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
+window.navigator.standalone;
+  if(isIOS && !isStandalone) {
+    console.log("Sugerencia: Añade esta app a tu pantalla de inicio.");
+  }
+});
+
+// --- EXPORTAR EXCEL CON HIPERVÍNCULOS ---
+function exportExcel() {
+  if (expenses.length === 0) {
+    showToast("No hay datos para exportar");
+    return;
+  }
+
+  const data = expenses.map(e => ({
+    Fecha: e.date,
+    Establecimiento: e.name,
+    Importe: e.amount,
+    Categoría: e.category,
+    Método: e.payment,
+    Notas: e.notes || "",
+    Enlace_Ticket: e.photoUrl || "Sin foto" // Aquí va el hyperlink
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Gastos");
+  
+  const fileName = `Reporte_Gastos_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, fileName);
+  showToast("Excel descargado");
+}
+
+// --- FUNCIONES DE NAVEGACIÓN ---
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if(target) target.classList.add('active');
+}
+
+function showAddSheet() {
+  document.getElementById('sheet-title').innerText = "Nuevo gasto";
+  document.getElementById('f-id').value = "";
+  document.getElementById('overlay-add').classList.add('open');
+}
+
+function closeAdd() {
+  document.getElementById('overlay-add').classList.remove('open');
+}
+
+// --- INICIALIZACIÓN ---
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('loading-screen');
+    if(loader) loader.style.display = 'none';
+    showScreen('screen-auth'); 
+  }, 1500);
 
   // Build photo report HTML and encode as data URI so anyone can open it
   // The link in col G opens a self-contained page with all photos embedded
