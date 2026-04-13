@@ -1137,7 +1137,45 @@ window.showCharts=function(){
 };
 
 // ── EXCEL (todos los usuarios pueden exportar) ──
-window.exportExcel=function(){
+function exportExcel() {
+  if (typeof expenses === 'undefined' || expenses.length === 0) {
+    if(typeof showToast === 'function') showToast("No hay gastos registrados");
+    return;
+  }
+
+  const data = expenses.map(e => ({
+    Fecha: e.date,
+    Establecimiento: e.name,
+    Importe: e.amount,
+    Categoría: e.category,
+    Método: e.payment,
+    Notas: e.notes || "",
+    // Usamos el enlace directo que ya comprobamos que funciona
+    "Enlace al Ticket": e.photoUrl || "Sin foto"
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // --- LÓGICA DE HIPERVÍNCULOS ---
+  // Recorremos las celdas para que Excel las convierta en links clickeables
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+    const cellAddress = XLSX.utils.encode_cell({c: 6, r: R}); // La columna 6 es la del enlace
+    const cell = ws[cellAddress];
+    if (cell && cell.v && cell.v.startsWith('http')) {
+      cell.l = { 
+        Target: cell.v, 
+        Tooltip: "Abrir comprobante en el navegador" 
+      };
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Gastos Exportados");
+  
+  // Nombre del archivo con marca de tiempo para evitar duplicados
+  const fileName = `Reporte_Gastos_${new Date().getTime()}.xlsx`;
+  XLSX.writeFile(wb, fileName);
   if(!expenses.length){showToast('No hay gastos para exportar');return;}
   // URL determinista sin token — funciona en iOS y Android
   const photoUrl=currentUser?(storageUrl(currentUser.uid)+'&v='+Date.now()):'';
