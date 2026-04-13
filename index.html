@@ -528,7 +528,33 @@ self.addEventListener('fetch', e => {
 window.addEventListener('load', () => {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if(isIOS && !isStandalone){
+  if(isIOS && !isStandalone) {
+    console.log("Sugerencia: Añade esta app a tu pantalla de inicio.");
+  }
+});
+
+// --- FUNCIONES DE NAVEGACIÓN ---
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if(target) target.classList.add('active');
+}
+
+function showAddSheet() {
+  document.getElementById('overlay-add').classList.add('open');
+}
+
+function closeAdd() {
+  document.getElementById('overlay-add').classList.remove('open');
+}
+
+// --- INICIALIZACIÓN ---
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const loader = document.getElementById('loading-screen');
+    if(loader) loader.style.display = 'none';
+    showScreen('screen-auth'); 
+  }, 1500);
     // Show hint after 3 seconds on first visit
     if(!localStorage.getItem('ios_hint_shown')){
       setTimeout(()=>{
