@@ -548,22 +548,38 @@ function closeAdd() {
   document.getElementById('overlay-add').classList.remove('open');
 }
 
+// --- EXPORTAR EXCEL CON HYPERLINK ---
+function exportExcel() {
+  if (typeof expenses === 'undefined' || expenses.length === 0) {
+    alert("No hay datos para exportar");
+    return;
+  }
+
+  const data = expenses.map(e => ({
+    Fecha: e.date,
+    Establecimiento: e.name,
+    Importe: e.amount,
+    Categoría: e.category,
+    Método: e.payment,
+    Notas: e.notes || "",
+    "Enlace Ticket": e.photoUrl || "Sin foto" 
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Gastos");
+  XLSX.writeFile(wb, `Gastos_${new Date().toLocaleDateString()}.xlsx`);
+}
+
 // --- INICIALIZACIÓN ---
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     const loader = document.getElementById('loading-screen');
     if(loader) loader.style.display = 'none';
+    
+    // Mostramos la pantalla de login al inicio
     showScreen('screen-auth'); 
   }, 1500);
-    // Show hint after 3 seconds on first visit
-    if(!localStorage.getItem('ios_hint_shown')){
-      setTimeout(()=>{
-        showIOSHint();
-        localStorage.setItem('ios_hint_shown','1');
-      }, 3000);
-    }
-  }
-});
 
 function showIOSHint(){
   const hint = document.createElement('div');
