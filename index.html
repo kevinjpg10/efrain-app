@@ -1137,7 +1137,6 @@ window.showCharts=function(){
 };
 
 // EXCEL
-
 window.exportExcel = function () {
   try {
     if (!Array.isArray(expenses) || expenses.length === 0) {
@@ -1211,7 +1210,6 @@ window.exportExcel = function () {
 
       const ws = XLSX.utils.json_to_sheet(rows);
 
-      // Ancho columnas
       ws["!cols"] = [
         { wch: 14 },
         { wch: 28 },
@@ -1222,7 +1220,7 @@ window.exportExcel = function () {
         { wch: 18 }
       ];
 
-      // Añadir links de fotos correctamente
+      // Links de fotos
       if (photoUrl) {
         sorted.forEach((_, i) => {
           const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
@@ -1240,7 +1238,35 @@ window.exportExcel = function () {
       XLSX.utils.book_append_sheet(wb, ws, `${code} ${sym}`);
     });
 
-    XLSX.writeFile(wb, `Gastos_${month}.xlsx`);
+    // 📱 DETECCIÓN DE iPhone / iPad
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+    if (isIOS) {
+      // MÉTODO SEGURO PARA iOS
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+
+      const blob = new Blob([wbout], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Gastos_${month}.xlsx`;
+
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    } else {
+      // 💻 PC / ANDROID
+      XLSX.writeFile(wb, `Gastos_${month}.xlsx`);
+    }
+
   } catch (err) {
     console.error("Error exportando Excel:", err);
     showToast?.("Error al exportar el Excel");
