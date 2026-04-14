@@ -3,81 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mis Gastos Pro</title>
-<link rel="icon" href="data:image/png;base64,YOUR_ICON_B64_HERE">
+<title>Mis Gastos Pro V3 ULTRA</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <style>
-/* ------------------ CSS Básico ------------------ */
-body{margin:0;padding:0;font-family:-apple-system,Arial,sans-serif;background:#0a0a1a;color:#f5f5f7}
-.screen{display:none}.screen.active{display:block}
-/* .btn, overlays, tabs, badges y estilos de dashboard se mantienen igual que tu código */
+/* === ESTILOS === */
+body{margin:0;font-family:-apple-system,Arial,sans-serif;background:#0a0a1a;color:#f5f5f7;}
+.screen{display:none;padding:12px;}
+.screen.active{display:block;}
+.btn{cursor:pointer;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:flex-end;justify-content:center;z-index:999;}
+.overlay.open{display:flex;}
+.sheet{background:#13131a;width:100%;max-width:460px;border-radius:12px;padding:16px;}
+.sheet-handle{width:40px;height:5px;background:#555;margin:0 auto 10px;border-radius:3px;}
+.sheet-title{font-size:17px;font-weight:700;margin-bottom:10px;text-align:center;}
+.expense-item{display:flex;align-items:center;justify-content:space-between;padding:10px;border-bottom:1px solid #1e1e28;border-radius:8px;margin-bottom:5px;}
+.exp-icon-wrap{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;}
+.exp-info{flex:1;margin-left:10px;}
+.exp-right{text-align:right;}
+.detail-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #1e1e28;}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#4f8ef7;color:#fff;padding:10px 14px;border-radius:8px;opacity:0;transition:0.3s;z-index:1000;}
+#toast.show{opacity:1;}
+input,select,textarea{width:100%;padding:7px 10px;margin-bottom:8px;border-radius:6px;border:1px solid #444;background:#1e1e28;color:#fff;}
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div class="screen" id="screen-auth">
-  <!-- Email / password / login/register -->
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SCREENS -->
+<div id="screen-auth" class="screen active">
+  <h3>Inicia sesión / Regístrate</h3>
+  <div class="auth-tab active" style="margin-bottom:8px;">
+    <input id="auth-email" type="email" placeholder="Email">
+    <input id="auth-pass" type="password" placeholder="Contraseña">
+    <input id="auth-business-name" type="text" placeholder="Nombre App (solo registro)">
+    <button id="auth-btn" class="btn btn-primary w-100" onclick="doAuth()">Iniciar sesión</button>
+    <div id="auth-error" style="color:#f87171;margin-top:6px;"></div>
+  </div>
 </div>
 
-<!-- MAIN SCREEN -->
-<div class="screen" id="screen-main">
-  <header>
-    <div id="app-name-display">Mis Gastos Pro</div>
-    <div id="user-email-display"></div>
-  </header>
+<div id="screen-main" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <h3 id="month-badge"></h3>
+    <button class="btn btn-amber" onclick="showAddSheet()">+ Añadir gasto</button>
+  </div>
   <div id="expense-list"></div>
-  <button id="fab-btn" onclick="showAddSheet()">+</button>
+  <div style="margin-top:12px">
+    <button class="btn btn-success w-100" onclick="showCharts()">📊 Dashboard</button>
+    <button class="btn btn-danger w-100 mt-2" onclick="showCloseMonth()">📥 Cerrar mes / Descargar</button>
+  </div>
 </div>
 
-<!-- DETAIL SCREEN -->
-<div class="screen" id="screen-detail">
-  <div id="detail-body"></div>
+<!-- ADD / EDIT OVERLAY -->
+<div class="overlay" id="overlay-add">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheet-title">Nuevo gasto</div>
+    <input type="hidden" id="f-id">
+    <input type="text" id="f-name" placeholder="Nombre del establecimiento">
+    <input type="number" step="0.01" id="f-amount" placeholder="Importe">
+    <input type="date" id="f-date">
+    <select id="f-category">
+      <option>Comida</option><option>Gasolina</option><option>Transporte</option><option>Material</option>
+      <option>Varios</option><option>Salud</option><option>Ocio</option><option>Ropa</option>
+    </select>
+    <select id="f-payment">
+      <option value="tarjeta">Tarjeta</option>
+      <option value="efectivo">Efectivo</option>
+    </select>
+    <textarea id="f-notes" placeholder="Notas"></textarea>
+    <button class="btn btn-primary w-100" onclick="saveExpense()">Guardar gasto</button>
+    <button class="btn btn-ghost w-100" onclick="closeAdd()">Cancelar</button>
+  </div>
 </div>
 
-<!-- SETTINGS SCREEN -->
-<div class="screen" id="screen-settings">
-  <input id="app-name-input" placeholder="Nombre app">
-  <button onclick="saveAppNameToFirestore()">Guardar</button>
-  <select id="currency-select" onchange="saveCurrency(this.value)">
-    <option value="EUR">€ Euro</option>
-    <option value="USD">$ Dólar</option>
-    <option value="GBP">£ Libra</option>
-    <option value="MXN">MX$ Peso MX</option>
-    <option value="DOP">RD$ Peso DO</option>
-  </select>
+<!-- PREMIUM OVERLAY -->
+<div class="overlay" id="overlay-premium">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">⭐ Hazte Premium</div>
+    <p style="font-size:13px;color:#f5f5f7">Has alcanzado el límite de la versión gratuita. ¡Hazte Premium para tickets ilimitados!</p>
+    <button class="btn btn-wa w-100" onclick="openWhatsAppPremium()">💬 Contactar por WhatsApp</button>
+    <button class="btn btn-ghost w-100" onclick="document.getElementById('overlay-premium').classList.remove('open')">Ahora no</button>
+  </div>
 </div>
 
-<!-- DASHBOARD SCREEN -->
-<div class="screen" id="screen-dashboard">
-  <div id="dash-month-label"></div>
-  <div id="dashboard-body"></div>
+<!-- DASHBOARD / PDF / EXCEL / CIERRE MES OVERLAYS -->
+<div class="overlay" id="overlay-close-month">
+  <div class="sheet" id="sheet-close-month">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">📅 Cierre de mes</div>
+    <div id="close-month-sub" style="font-size:13px;color:#f5f5f7;margin-bottom:7px"></div>
+    <div id="close-month-summary" style="margin-bottom:10px"></div>
+    <button class="btn btn-amber w-100" onclick="downloadAndClose()">📥 Descargar & Limpiar</button>
+    <button class="btn btn-danger w-100 mt-2" onclick="skipAndClose()">🗑️ Limpiar sin descargar</button>
+    <button class="btn btn-ghost w-100 mt-2" onclick="document.getElementById('overlay-close-month').classList.remove('open')">Cancelar</button>
+  </div>
 </div>
 
-<!-- ADMIN SCREEN -->
-<div class="screen" id="screen-admin">
-  <input placeholder="Buscar usuario" oninput="filterAdminUsers(this.value)">
-  <div id="admin-user-list"></div>
-</div>
-
-<!-- OVERLAYS -->
-<div class="overlay" id="overlay-photo"></div>
-<div class="overlay" id="overlay-add"></div>
-<div class="overlay" id="overlay-delete"></div>
-<div class="overlay" id="overlay-close-month"></div>
-<div class="overlay" id="overlay-premium"></div>
-<div class="overlay" id="overlay-photo-limit"></div>
-
-<div class="toast" id="toast"></div>
-<canvas id="offscreen" style="display:none"></canvas>
-
-<!-- SCRIPTS -->
 <script type="module">
+// ══════════ FIREBASE ══════════
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, setDoc, getDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
-// ------------------- FIREBASE -------------------
+// ── CONFIG ──
 const firebaseConfig = {
   apiKey: "AIzaSyB6Edbnh750Jaf0wxvRF00tp0YXori42Hc",
   authDomain: "mis-gastos-pro-eedcf.firebaseapp.com",
@@ -91,34 +123,71 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ------------------- CONSTANTES -------------------
 const FREE_LIMIT = 10;
 const FREE_PHOTO_LIM = 10;
 const WHATSAPP_NUM = '34637687764';
 const CAT_COLORS={Comida:'#ef4444',Gasolina:'#3b82f6',Transporte:'#eab308',Material:'#8b5cf6',Varios:'#f97316',Salud:'#06b6d4',Ocio:'#ec4899',Ropa:'#84cc16'};
 const CAT_ICONS={Comida:'🍔',Gasolina:'⛽',Transporte:'🚗',Material:'📦',Varios:'🛍️',Salud:'💊',Ocio:'🎮',Ropa:'👕'};
-const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const CURRENCIES={EUR:{symbol:'€',name:'Euro',flag:'🇪🇸'},USD:{symbol:'$',name:'Dólar',flag:'🇺🇸'},GBP:{symbol:'£',name:'Libra',flag:'🇬🇧'},MXN:{symbol:'MX$',name:'Peso MX',flag:'🇲🇽'},DOP:{symbol:'RD$',name:'Peso DO',flag:'🇩🇴'}};
-let currentUser=null, expenses=[], isPremium=false, isAdmin=false, currentImageB64=null;
+const CURRENCIES={EUR:{symbol:'€',name:'Euro',flag:'🇪🇸'},USD:{symbol:'$',name:'Dólar',flag:'🇺🇸'}};
 
-// ------------------- FUNCIONES -------------------
-// loadUserProfile, doAuth, doLogout, onAuthStateChanged, add/edit/delete expense
-// dashboards, stats, export Excel/PDF, photo reports, premium paywall
-// admin panel
-// La lógica es exactamente como tu código original
+// ── STATE ──
+let currentUser=null, expenses=[], isPremium=false;
 
-// ------------------- EJEMPLO: Toast -------------------
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+// ── TOAST ──
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 
-// ------------------- UTILS -------------------
-function monthLabel(){const d=new Date();return MONTHS[d.getMonth()]+' '+d.getFullYear();}
+// ── AUTH ──
+async function doAuth(){
+  const email=document.getElementById('auth-email').value.trim();
+  const pass=document.getElementById('auth-pass').value;
+  const isLogin=document.getElementById('auth-btn').textContent.includes('sesión');
+  if(!email||!pass){showToast('Rellena email y contraseña');return;}
+  try{
+    if(isLogin) await signInWithEmailAndPassword(auth,email,pass);
+    else{
+      const cred=await createUserWithEmailAndPassword(auth,email,pass);
+      await addDoc(collection(db,'users'),{email,isPremium:false,createdAt:new Date().toISOString()});
+    }
+  }catch(e){showToast('❌ '+e.message);}
+}
 
-// Las demás funciones: renderList, renderStats, showDetail, saveExpense, scanWithGemini, uploadPhotoReport, exportExcel, exportPDF, showCloseMonth, cleanupMonth, adminTogglePremium
-// TODO: Copiar tal cual tu código V3, manteniendo la estructura y lógica
+onAuthStateChanged(auth, async(user)=>{
+  if(user){currentUser=user;subscribeExpenses();document.getElementById('screen-main').classList.add('active');document.getElementById('screen-auth').classList.remove('active');}
+  else{document.getElementById('screen-auth').classList.add('active');document.getElementById('screen-main').classList.remove('active');}
+});
 
+// ── EXPENSES ──
+function subscribeExpenses(){
+  if(!currentUser)return;
+  const q=query(collection(db,'users',currentUser.uid,'expenses'),orderBy('date','desc'));
+  onSnapshot(q,snap=>{expenses=snap.docs.map(d=>({id:d.id,...d.data()}));renderList();});
+}
+
+function renderList(){
+  const list=document.getElementById('expense-list');
+  if(!expenses.length){list.innerHTML='<div style="text-align:center;color:#888;margin-top:12px">Sin gastos</div>';return;}
+  list.innerHTML=expenses.map(e=>`<div class="expense-item"><div class="exp-icon-wrap" style="background:${CAT_COLORS[e.category]||'#888'}">${CAT_ICONS[e.category]||'💰'}</div><div class="exp-info">${e.name}</div><div class="exp-right">${CURRENCIES[e.currency||'EUR'].symbol}${e.amount.toFixed(2)}</div></div>`).join('');
+}
+
+// ── ADD / EDIT ──
+window.showAddSheet=function(){document.getElementById('overlay-add').classList.add('open');};
+window.closeAdd=function(){document.getElementById('overlay-add').classList.remove('open');};
+window.saveExpense=async function(){
+  const name=document.getElementById('f-name').value.trim();
+  const amount=parseFloat(document.getElementById('f-amount').value);
+  const date=document.getElementById('f-date').value;
+  if(!name||isNaN(amount)){showToast('Rellena nombre y cantidad válida');return;}
+  if(!isPremium&&expenses.length>=FREE_LIMIT){document.getElementById('overlay-premium').classList.add('open');return;}
+  try{await addDoc(collection(db,'users',currentUser.uid,'expenses'),{name,amount,date,currency:'EUR',category:'Varios',payment:'tarjeta',notes:''});showToast('✅ Gasto guardado');closeAdd();}
+  catch(e){showToast('❌ '+e.message);}
+};
+
+// ── MONETIZACIÓN WHATSAPP ──
+window.openWhatsAppPremium=function(){
+  const email=currentUser?currentUser.email:'desconocido';
+  const msg=encodeURIComponent('Hola, quiero activar Premium. Email: '+email);
+  window.open('https://wa.me/'+WHATSAPP_NUM+'?text='+msg,'_blank');
+};
 </script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
 </body>
 </html>
