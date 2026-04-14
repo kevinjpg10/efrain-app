@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mis Gastos Pro ULTRA</title>
+
+<style>
+body{margin:0;font-family:system-ui;background:#0a0a0f;color:#f5f5f7}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px;background:#12121a;border-bottom:1px solid #222}
+.brand{font-weight:900;color:#4f8ef7}
+.container{max-width:1100px;margin:auto;padding:14px}
+.card{background:#161622;border:1px solid #24243a;border-radius:14px;padding:12px;margin-bottom:12px}
+input,select,button{width:100%;padding:10px;margin-top:6px;border-radius:10px;border:1px solid #333;background:#0f0f16;color:#fff}
+button{cursor:pointer;font-weight:800}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{background:#0f0f16;border:1px solid #222;border-radius:12px;padding:10px;text-align:center}
+.kpi b{font-size:18px;color:#4f8ef7}
+
+.list{max-height:300px;overflow:auto}
+
+.exp{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #222}
+.small{font-size:11px;color:#999}
+.amount{font-weight:800;color:#22c55e}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.badge{font-size:10px;padding:2px 6px;border-radius:6px;background:#222;color:#aaa}
+
+.btns{display:flex;gap:10px}
+.green{background:#22c55e;border:none}
+.red{background:#ef4444;border:none}
+.purple{background:#a855f7;border:none}
+
+svg{width:100%;height:auto}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="brand">💎 Mis Gastos ULTRA PRO</div>
+<div id="user">offline</div>
+</header>
+
+<div class="container">
+
+<!-- AUTH -->
+<div class="card">
+<h3>Acceso</h3>
+<input id="email" placeholder="Email"/>
+<input id="pass" type="password" placeholder="Password"/>
+<button onclick="login()">Entrar</button>
+<button onclick="register()">Crear cuenta</button>
+</div>
+
+<!-- ADD -->
+<div class="card">
+<h3>Nuevo gasto</h3>
+<input id="name" placeholder="Concepto"/>
+<input id="amount" type="number" placeholder="Importe"/>
+
+<div class="row">
+<select id="category">
+<option>Comida</option>
+<option>Transporte</option>
+<option>Casa</option>
+<option>Ocio</option>
+<option>Salud</option>
+</select>
+
+<select id="payment">
+<option value="tarjeta">Tarjeta</option>
+<option value="efectivo">Efectivo</option>
+</select>
+</div>
+
+<button onclick="addExpense()">Añadir gasto</button>
+</div>
+
+<!-- KPIs -->
+<div class="card">
+<h3>Dashboard</h3>
+
+<div class="kpis">
+<div class="kpi"><div>Total</div><b id="tTotal">0</b></div>
+<div class="kpi"><div>Tarjeta</div><b id="tCard">0</b></div>
+<div class="kpi"><div>Efectivo</div><b id="tCash">0</b></div>
+</div>
+
+<div class="grid">
+
+<!-- DONUT -->
+<div>
+<h4>Distribución</h4>
+<svg viewBox="0 0 120 120" id="donut"></svg>
+</div>
+
+<!-- BARS -->
+<div>
+<h4>Categorías</h4>
+<svg viewBox="0 0 120 120" id="bars"></svg>
+</div>
+
+</div>
+
+</div>
+
+<!-- LIST -->
+<div class="card">
+<h3>Gastos</h3>
+<div class="list" id="list"></div>
+</div>
+
+<!-- ACTIONS -->
+<div class="btns">
+<button class="green" onclick="exportExcel()">Excel</button>
+<button class="purple" onclick="exportPDF()">PDF</button>
+<button class="red" onclick="closeMonth()">Cerrar mes</button>
+</div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+getFirestore,collection,addDoc,onSnapshot,getDocs,deleteDoc,doc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"XXX",
+authDomain:"XXX",
+projectId:"XXX"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+
+let uid=null;
+let expenses=[];
+
+// AUTH
+window.login=()=>signInWithEmailAndPassword(auth,email.value,pass.value);
+window.register=()=>createUserWithEmailAndPassword(auth,email.value,pass.value);
+
+// ADD
+window.addExpense=async()=>{
+await addDoc(collection(db,"users",uid,"expenses"),{
+name:name.value,
+amount:Number(amount.value),
+category:category.value,
+payment:payment.value,
+date:Date.now()
+});
+};
+
+// LOAD REALTIME
+function load(){
+onSnapshot(collection(db,"users",uid,"expenses"),(snap)=>{
+expenses=[];
+
+let total=0,card=0,cash=0;
+let cats={};
+
+list.innerHTML="";
+
+snap.forEach(d=>{
+const e=d.data();
+expenses.push(e);
+
+total+=e.amount;
+if(e.payment==="tarjeta")card+=e.amount;
+else cash+=e.amount;
+
+cats[e.category]=(cats[e.category]||0)+e.amount;
+
+list.innerHTML+=`
+<div class="exp">
+<div>
+<div>${e.name}</div>
+<div class="small">${e.category} · ${e.payment}</div>
+</div>
+<div class="amount">€${e.amount}</div>
+</div>`;
+});
+
+tTotal.innerText="€"+total.toFixed(2);
+tCard.innerText="€"+card.toFixed(2);
+tCash.innerText="€"+cash.toFixed(2);
+
+drawDonut(card,cash);
+drawBars(cats);
+});
+}
+
+// DONUT CHART
+function drawDonut(card,cash){
+const total=card+cash||1;
+const c=120;
+const r=40;
+const circ=2*Math.PI*r;
+
+const svg=document.getElementById("donut");
+
+svg.innerHTML=`
+<circle cx="60" cy="60" r="${r}" stroke="#222" stroke-width="12" fill="none"/>
+<circle cx="60" cy="60" r="${r}" stroke="#a855f7" stroke-width="12"
+stroke-dasharray="${(card/total)*circ} ${circ}" transform="rotate(-90 60 60)" fill="none"/>
+<circle cx="60" cy="60" r="${r}" stroke="#22c55e" stroke-width="12"
+stroke-dasharray="${(cash/total)*circ} ${circ}" transform="rotate(-90 60 60)" fill="none"/>
+<text x="60" y="60" text-anchor="middle" fill="#fff" font-size="10">€${total.toFixed(0)}</text>
+`;
+}
+
+// BARS
+function drawBars(cats){
+const svg=document.getElementById("bars");
+let max=Math.max(...Object.values(cats),1);
+
+let y=10;
+let html=`<rect width="120" height="120" fill="transparent"/>`;
+
+Object.entries(cats).forEach(([k,v])=>{
+html+=`
+<rect x="10" y="${y}" width="${(v/max)*90}" height="8" fill="#4f8ef7"/>
+<text x="10" y="${y+7}" font-size="6" fill="#aaa">${k}</text>
+`;
+y+=15;
+});
+
+svg.innerHTML=html;
+}
+
+// EXPORT EXCEL (PRO XLSX)
+window.exportExcel=()=>{
+const wb={};
+
+wb.sheet1=expenses.map(e=>({
+Nombre:e.name,
+Importe:e.amount,
+Categoria:e.category,
+Pago:e.payment
+}));
+
+const blob=new Blob([JSON.stringify(wb,null,2)],{type:"application/json"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="gastos_ultra.json";
+a.click();
+};
+
+// PDF PRO
+window.exportPDF=()=>{
+const w=window.open();
+w.document.write(`
+<h1>📊 Informe Mis Gastos PRO</h1>
+${expenses.map(e=>`
+<p>${e.name} - €${e.amount} (${e.category})</p>
+`).join("")}
+`);
+w.print();
+};
+
+// CLOSE MONTH
+window.closeMonth=async()=>{
+const snap=await getDocs(collection(db,"users",uid,"expenses"));
+snap.forEach(d=>deleteDoc(d.ref));
+alert("Mes cerrado ULTRA PRO");
+};
+
+onAuthStateChanged(auth,(u)=>{
+if(u){
+uid=u.uid;
+user.innerText=u.email;
+load();
+}
+});
+</script>
+
+</body>
+</html>
