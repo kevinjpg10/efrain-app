@@ -1151,9 +1151,26 @@ window.exportExcel=function(){
     rows.push({});rows.push({Fecha:'TOTAL',[amtCol]:tot});rows.push({Fecha:'Tarjeta',[amtCol]:tar});rows.push({Fecha:'Efectivo',[amtCol]:efe});
     const ws=XLSX.utils.json_to_sheet(rows);
     ws['!cols']=[{wch:13},{wch:30},{wch:13},{wch:14},{wch:13},{wch:22},{wch:15}];
-    if(photoUrl)sorted.forEach((_,i)=>{const r=XLSX.utils.encode_cell({r:i+1,c:6});if(!ws[r])ws[r]={t:'s',v:'📷 ABRIR INFORME'};ws[r].l={Target:photoUrl,Tooltip:'Ver informe de fotos del mes'};});
-    XLSX.utils.book_append_sheet(wb,ws,code+' '+sym);
-  });
+   if (photoUrl) {
+    sorted.forEach((_, i) => {
+        const r = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
+        
+        // Creamos la celda con el texto, el link y el estilo para iPhone
+        ws[r] = {
+            t: 's',
+            v: '📷 ABRIR INFORME',
+            l: { 
+                Target: photoUrl, 
+                Tooltip: 'Ver informe de fotos del mes' 
+            },
+            // Añadimos estilo: Color azul (0563C1) y subrayado
+            s: {
+                font: { color: { rgb: "0563C1" }, underline: true },
+                alignment: { horizontal: "center", vertical: "center" }
+            }
+        };
+    });
+}
   if(Object.keys(groups).length>1){const sRows=Object.entries(groups).map(([code,exps])=>{const c=CURRENCIES[code]||CURRENCIES.EUR;return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,Total:exps.reduce((s,e)=>s+e.amount,0),'Con foto':exps.filter(e=>e.photo).length};});XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sRows),'Resumen');}
   const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   const blob=new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
