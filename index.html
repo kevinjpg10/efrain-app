@@ -1139,38 +1139,65 @@ window.showCharts=function(){
 // ── EXCEL (todos los usuarios pueden exportar) ──
 window.exportExcel=function(){
   if(!expenses.length){showToast('No hay gastos para exportar');return;}
-  // URL determinista sin token — funciona en iOS y Android
+  
   const photoUrl=currentUser?(storageUrl(currentUser.uid)+'&v='+Date.now()):'';
   const month=monthLabel(),wb=XLSX.utils.book_new();
-  const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
+  const groups={};
+  
+  expenses.forEach(e=>{
+    const cur=e.currency||'EUR';
+    if(!groups[cur])groups[cur]=[];
+    groups[cur].push(e);
+  });
+
   Object.entries(groups).forEach(([code,exps])=>{
     const c=CURRENCIES[code]||CURRENCIES.EUR,sym=c.symbol,amtCol='Importe ('+sym+')';
     const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
-    const rows=sorted.map(e=>({Fecha:e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'Sin fecha',Establecimiento:e.name,Categoría:e.category,'Método de pago':e.payment==='tarjeta'?'Tarjeta':'Efectivo',[amtCol]:e.amount,Notas:e.notes||'','Ver Fotos':photoUrl?'📷 ABRIR INFORME':''}));
-    const tot=exps.reduce((s,e)=>s+e.amount,0),tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0),efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
-    rows.push({});rows.push({Fecha:'TOTAL',[amtCol]:tot});rows.push({Fecha:'Tarjeta',[amtCol]:tar});rows.push({Fecha:'Efectivo',[amtCol]:efe});
+    
+    const rows=sorted.map(e=>({
+      Fecha:e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'Sin fecha',
+      Establecimiento:e.name,
+      Categoría:e.category,
+      'Método de pago':e.payment==='tarjeta'?'Tarjeta':'Efectivo',
+      [amtCol]:e.amount,
+      Notas:e.notes||'',
+      'Ver Fotos':photoUrl?'📷 ABRIR INFORME':''
+    }));
+
+    const tot=exps.reduce((s,e)=>s+e.amount,0);
+    const tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0);
+    const efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
+    
+    rows.push({});
+    rows.push({Fecha:'TOTAL',[amtCol]:tot});
+    rows.push({Fecha:'Tarjeta',[amtCol]:tar});
+    rows.push({Fecha:'Efectivo',[amtCol]:efe});
+
     const ws=XLSX.utils.json_to_sheet(rows);
     ws['!cols']=[{wch:13},{wch:30},{wch:13},{wch:14},{wch:13},{wch:22},{wch:15}];
-   if (photoUrl) {
-    sorted.forEach((_, i) => {
+
+    if (photoUrl) {
+      sorted.forEach((_, i) => {
         const r = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
-        
-        // Creamos la celda con el texto, el link y el estilo para iPhone
         ws[r] = {
-            t: 's',
-            v: '📷 ABRIR INFORME',
-            l: { 
-                Target: photoUrl, 
-                Tooltip: 'Ver informe de fotos del mes' 
-            },
-            // Añadimos estilo: Color azul (0563C1) y subrayado
-            s: {
-                font: { color: { rgb: "0563C1" }, underline: true },
-                alignment: { horizontal: "center", vertical: "center" }
-            }
+          t: 's',
+          v: '📷 ABRIR INFORME',
+          l: { Target: photoUrl, Tooltip: 'Ver informe de fotos del mes' },
+          s: {
+            font: { color: { rgb: "0563C1" }, underline: true },
+            alignment: { horizontal: "center", vertical: "center" }
+          }
         };
-    });
-}
+      });
+    }
+
+    // ESTO ES LO QUE FALTABA:
+    XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
+  }); // <--- Cierra el Object.entries().forEach
+
+  // Al final de todo, fuera del bucle de monedas, guardas el archivo
+  XLSX.writeFile(wb, `Gastos_${month}.xlsx`);
+}; // <--- Cierra la función window.exportExcel
   if(Object.keys(groups).length>1){const sRows=Object.entries(groups).map(([code,exps])=>{const c=CURRENCIES[code]||CURRENCIES.EUR;return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,Total:exps.reduce((s,e)=>s+e.amount,0),'Con foto':exps.filter(e=>e.photo).length};});XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sRows),'Resumen');}
   const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   const blob=new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
