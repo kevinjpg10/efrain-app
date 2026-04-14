@@ -1136,49 +1136,116 @@ window.showCharts=function(){
   showScreen('screen-dashboard');
 };
 
+// EXCEL
+
 window.exportExcel = function () {
+  try {
+    if (!Array.isArray(expenses) || expenses.length === 0) {
+      showToast?.('No hay gastos para exportar');
+      return;
+    }
 
-  // ... todo tu código ...
+    const wb = XLSX.utils.book_new();
 
-  Object.entries(groups).forEach(([code, exps]) => {
-    // ...
-  });
+    const photoUrl =
+      currentUser && typeof storageUrl === "function"
+        ? storageUrl(currentUser.uid) + "&v=" + Date.now()
+        : "";
 
-  // 👇 TODO esto debe estar dentro de la función
-  if(Object.keys(groups).length>1){
-    const sRows = Object.entries(groups).map(([code,exps])=>{
-      const c = CURRENCIES[code] || CURRENCIES.EUR;
-      return {
-        Moneda: c.name,
-        Símbolo: c.symbol,
-        Gastos: exps.length,
-        Total: exps.reduce((s,e)=>s+e.amount,0),
-        'Con foto': exps.filter(e=>e.photo).length
-      };
+    const month =
+      typeof monthLabel === "function"
+        ? monthLabel()
+        : new Date().toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+
+    const groups = {};
+
+    // Agrupar por moneda
+    expenses.forEach((e) => {
+      const cur = e?.currency || "EUR";
+      if (!groups[cur]) groups[cur] = [];
+      groups[cur].push(e);
     });
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sRows), 'Resumen');
+
+    Object.entries(groups).forEach(([code, exps]) => {
+      const currencyData =
+        (typeof CURRENCIES !== "undefined" && CURRENCIES[code]) ||
+        { symbol: "€" };
+
+      const sym = currencyData.symbol;
+      const amtCol = `Importe (${sym})`;
+
+      const sorted = exps
+        .slice()
+        .sort((a, b) => new Date(a?.date || 0) - new Date(b?.date || 0));
+
+      const rows = sorted.map((e) => {
+        const amount = Number(e?.amount) || 0;
+
+        return {
+          Fecha: e?.date
+            ? new Date(e.date + "T12:00:00").toLocaleDateString("es-ES")
+            : "Sin fecha",
+          Establecimiento: e?.name || "",
+          Categoría: e?.category || "",
+          "Método de pago":
+            e?.payment === "tarjeta" ? "Tarjeta" : "Efectivo",
+          [amtCol]: amount,
+          Notas: e?.notes || "",
+          "Ver Fotos": photoUrl ? "📷 ABRIR INFORME" : ""
+        };
+      });
+
+      // Totales
+      const tot = exps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      const tar = exps
+        .filter((e) => e.payment === "tarjeta")
+        .reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      const efe = exps
+        .filter((e) => e.payment === "efectivo")
+        .reduce((s, e) => s + (Number(e.amount) || 0), 0);
+
+      rows.push({});
+      rows.push({ Fecha: "TOTAL", [amtCol]: tot });
+      rows.push({ Fecha: "Tarjeta", [amtCol]: tar });
+      rows.push({ Fecha: "Efectivo", [amtCol]: efe });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+
+      // Ancho columnas
+      ws["!cols"] = [
+        { wch: 14 },
+        { wch: 28 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 25 },
+        { wch: 18 }
+      ];
+
+      // Añadir links de fotos correctamente
+      if (photoUrl) {
+        sorted.forEach((_, i) => {
+          const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
+
+          if (!ws[cellRef]) ws[cellRef] = { t: "s", v: "" };
+
+          ws[cellRef].v = "📷 ABRIR INFORME";
+          ws[cellRef].l = {
+            Target: photoUrl,
+            Tooltip: "Ver informe de fotos del mes"
+          };
+        });
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws, `${code} ${sym}`);
+    });
+
+    XLSX.writeFile(wb, `Gastos_${month}.xlsx`);
+  } catch (err) {
+    console.error("Error exportando Excel:", err);
+    showToast?.("Error al exportar el Excel");
   }
-
-  const xlsxOut = XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  const blob = new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'Gastos_' + month.replace(' ','_') + '.xlsx';
-  a.style.display = 'none';
-
-  document.body.appendChild(a);
-  a.click();
-
-  setTimeout(()=>{
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  },2000);
-
-  showToast('📊 Excel descargado ✓');
-
-}; // ✅ SOLO ESTE cierre
+};
 
 // ── PDF (todos los usuarios pueden exportar) ──
 window.exportPDF=function(){
