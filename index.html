@@ -528,7 +528,12 @@ window.addEventListener('load',function(){
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, setDoc, getDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getStorage, ref, uploadString } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+import { 
+  getStorage, 
+  ref, 
+  uploadString, 
+  getDownloadURL 
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 // ════════════════════════════════════════════════════════
 // FIREBASE CONFIG — Variables necesarias de Firebase
@@ -1137,7 +1142,7 @@ window.showCharts=function(){
 };
 
 // EXCEL
-window.exportExcel = function () {
+window.exportExcel = async function () {
   try {
     if (!Array.isArray(expenses) || expenses.length === 0) {
       showToast?.('No hay gastos para exportar');
@@ -1146,10 +1151,21 @@ window.exportExcel = function () {
 
     const wb = XLSX.utils.book_new();
 
-    const photoUrl =
-      currentUser && typeof storageUrl === "function"
-        ? storageUrl(currentUser.uid) + "&v=" + Date.now()
-        : "";
+    let photoUrl = "";
+
+try {
+  const storage = getStorage(app);
+
+  const storageRef = ref(
+    storage,
+    `usuarios/${currentUser.uid}/informe_mes.pdf`
+  );
+
+  photoUrl = await getDownloadURL(storageRef);
+} catch (error) {
+  console.warn("No hay informe de fotos o no se pudo cargar la URL");
+  photoUrl = "";
+}
 
     const month =
       typeof monthLabel === "function"
