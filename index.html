@@ -1148,7 +1148,7 @@ window.exportExcel=async function(){
     // Upload latest version and get fresh token URL
     photoUrl=await uploadAndGetPhotoUrl();
   }
- 
+ const photoUrl=currentUser?(storageUrl(currentUser.uid)+'&v='+Date.now()):'';
   const month=monthLabel(),wb=XLSX.utils.book_new();
   const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
  
