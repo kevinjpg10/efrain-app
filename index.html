@@ -1139,16 +1139,19 @@ window.showCharts=function(){
 // ── EXCEL ──
 window.exportExcel = async function() {
     if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
-    showToast('⏳ Preparando Excel...');
+    showToast('⏳ Generando Excel...');
 
-    // 1. INTENTAMOS OBTENER LA URL (pero aunque falle, seguimos)
-    let photoUrl = null;
+    // 1. OBTENCIÓN DE URL CON SEGURO DE FALLOS
+    let photoUrl = "";
     try {
         if (expenses.some(e => e.photo)) {
-            photoUrl = await uploadAndGetPhotoUrl();
+            // Esperamos la URL real. Si falla, el catch evita que el código se muera.
+            const result = await uploadAndGetPhotoUrl();
+            photoUrl = result || ""; 
         }
     } catch (err) {
-        console.error("Error obteniendo URL de fotos:", err);
+        console.error("Error crítico obteniendo URL:", err);
+        photoUrl = "ERROR_URL"; // Marca visual para saber que falló la subida
     }
 
     const month = monthLabel(), wb = XLSX.utils.book_new();
@@ -1164,15 +1167,15 @@ window.exportExcel = async function() {
         const amtCol = 'Importe (' + sym + ')';
         const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
-        // 2. CREACIÓN DE FILAS (Forzamos el texto para ver si la columna responde)
+        // 2. MAPEO DE FILAS (Forzamos que la columna 7 siempre tenga datos)
         const rows = sorted.map(e => ({
             Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-            Establecimiento: e.name,
-            Categoría: e.category,
+            Establecimiento: e.name || "",
+            Categoría: e.category || "",
             'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
             [amtCol]: e.amount,
             Notas: e.notes || '',
-            'Ver Fotos': photoUrl ? '📷 VER INFORME' : '❌ SIN LINK' // <--- SI SALE ESTO, ES QUE photoUrl ESTÁ VACÍO
+            'Ver Fotos': photoUrl === "ERROR_URL" ? "⚠️ Error Subida" : (photoUrl ? "📷 VER INFORME" : "Sin fotos")
         }));
 
         const tot = exps.reduce((s, e) => s + e.amount, 0);
@@ -1180,25 +1183,36 @@ window.exportExcel = async function() {
 
         const ws = XLSX.utils.json_to_sheet(rows);
 
-        // 3. INYECTAMOS EL LINK (Solo si tenemos la URL)
-        if (photoUrl) {
-            sorted.forEach((_, i) => {
-                const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
+        // 3. INYECCIÓN AGRESIVA DE LINKS (Recorrido manual de celdas)
+        if (photoUrl && photoUrl !== "ERROR_URL") {
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            // Empezamos en i=1 (fila 2 de Excel) para saltar el encabezado
+            for (let i = 1; i <= sorted.length; i++) {
+                const cellRef = XLSX.utils.encode_cell({ r: i, c: 6 }); // Columna G
+                
                 ws[cellRef] = {
                     t: 's',
                     v: '📷 VER INFORME',
-                    l: { Target: photoUrl, Tooltip: 'Abrir fotos' },
-                    s: { font: { color: { rgb: "0563C1" }, underline: true } }
+                    l: { Target: photoUrl, Tooltip: 'Abrir informe de fotos' },
+                    s: { 
+                        font: { color: { rgb: "0563C1" }, underline: true },
+                        alignment: { horizontal: "center" } 
+                    }
                 };
-            });
+            }
         }
 
+        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}, {wch:25}];
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
-    // 4. DESCARGA DIRECTA
-    XLSX.writeFile(wb, `Gastos_${month.replace(/\s+/g, '_')}.xlsx`);
-    showToast('📊 Excel generado ✓');
+    // 4. DESCARGA FINAL
+    try {
+        XLSX.writeFile(wb, `Gastos_${month.replace(/\s+/g, '_')}.xlsx`);
+        showToast('📊 Excel generado ✓');
+    } catch (e) {
+        showToast('❌ Error al guardar el archivo');
+    }
 };
 
   
