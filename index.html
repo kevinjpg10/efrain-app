@@ -1191,14 +1191,33 @@ window.exportExcel=async function(){
   }
 
   const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  const blob=new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download='Gastos_'+month.replace(' ','_')+'.xlsx';
-  a.style.display='none';document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
-  showToast('📊 Excel descargado ✓'+(photoUrl?' · con link de fotos':''));
-};
+  // ... (tu código anterior igual hasta generar el blob)
+
+  const blob = new Blob([xlsxOut], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  
+  // SOLUCIÓN PARA MÓVILES: Usar un lector de archivos o disparar la descarga de forma más directa
+  if (navigator.msSaveBlob) { // Para IE
+      navigator.msSaveBlob(blob, 'Gastos_' + month.replace(' ', '_') + '.xlsx');
+  } else {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Gastos_' + month.replace(' ', '_') + '.xlsx';
+      
+      // Añadimos target="_blank" que ayuda en algunos navegadores móviles
+      a.target = '_blank'; 
+      
+      document.body.appendChild(a);
+      a.click();
+      
+      // Esperamos un poco más antes de limpiar
+      setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+      }, 5000); 
+  }
+  showToast('📊 Excel descargado ✓');
+
 
   
 // ── PDF (todos los usuarios pueden exportar) ──
