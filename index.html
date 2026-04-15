@@ -1143,12 +1143,15 @@ window.exportExcel = async function() {
 
     let photoUrl = null;
     try {
-        // Intentamos obtener la URL de las fotos
+        // Intentamos obtener la URL. Si falla, photoUrl seguirá siendo null pero el código NO se parará.
         if (expenses.some(e => e.photo)) {
-            photoUrl = await uploadAndGetPhotoUrl();
+            photoUrl = await uploadAndGetPhotoUrl().catch(err => {
+                console.error("Error en upload:", err);
+                return null; 
+            });
         }
     } catch (err) {
-        console.error("Error en fotos:", err);
+        console.error("Error general de fotos:", err);
     }
 
     const month = monthLabel();
@@ -1166,46 +1169,60 @@ window.exportExcel = async function() {
         const amtCol = 'Importe (' + sym + ')';
         const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
-        const rows = sorted.map(e => ({
-            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-            Establecimiento: e.name,
-            Categoría: e.category,
-            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-            [amtCol]: e.amount,
-            Notas: e.notes || '',
-            'Ver Fotos': photoUrl ? '📷 VER INFORME' : ''
-        }));
+        // CRÍTICO: Aquí definimos las filas. 
+        // Forzamos que la columna 'Ver Fotos' exista SIEMPRE en el objeto.
+        const rows = sorted.map(e => {
+            const row = {
+                Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
+                Establecimiento: e.name || '',
+                Categoría: e.category || '',
+                'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+                [amtCol]: e.amount || 0,
+                Notas: e.notes || ''
+            };
+            
+            // Añadimos la columna "Ver Fotos" explícitamente al final
+            row['Ver Fotos'] = photoUrl ? '📷 VER INFORME' : 'Sin fotos';
+            return row;
+        });
 
+        // Añadimos los totales
         const tot = exps.reduce((s, e) => s + e.amount, 0);
-        rows.push({}, { Fecha: 'TOTAL', [amtCol]: tot });
+        rows.push({}); 
+        rows.push({ Fecha: 'TOTAL', [amtCol]: tot, 'Ver Fotos': '' });
 
         const ws = XLSX.utils.json_to_sheet(rows);
 
+        // Si hay URL, inyectamos el link oficial en cada celda de la columna G (índice 6)
         if (photoUrl) {
             sorted.forEach((_, i) => {
                 const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
                 ws[cellRef] = {
-                    t: 's', v: '📷 VER INFORME',
-                    l: { Target: photoUrl },
+                    t: 's',
+                    v: '📷 VER INFORME',
+                    l: { Target: photoUrl, Tooltip: 'Abrir informe de fotos' },
                     s: { font: { color: { rgb: "0563C1" }, underline: true } }
                 };
             });
         }
+
+        // Ajustamos el ancho de las columnas (la 7ª columna es la de fotos)
+        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}, {wch:20}];
+        
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
-    // --- MÉTODO DE DESCARGA ULTRA-COMPATIBLE ---
     try {
-        // Usamos writeFile directamente, que es la forma más estable de la librería SheetJS
         const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
         XLSX.writeFile(wb, fileName);
-        
         showToast('📊 Excel descargado ✓');
     } catch (e) {
-        console.error("Error crítico en descarga:", e);
-        showToast('❌ Error al guardar el archivo');
+        console.error("Error al guardar:", e);
+        showToast('❌ Error al generar archivo');
     }
 };
+
+  
 // ── PDF (todos los usuarios pueden exportar) ──
 window.exportPDF=function(){
   if(!expenses.length){showToast('No hay gastos para exportar');return;}
