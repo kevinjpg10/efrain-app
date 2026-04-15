@@ -1137,112 +1137,39 @@ window.showCharts=function(){
 };
 
 // ── EXCEL ──
-// ── EXCEL CORREGIDO ──
-window.exportExcel = async function() {
-  if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
-  
-  // 1. Mostrar estado inicial
-  showToast('⏳ Preparando Excel...');
-
-  let photoUrl = null;
-  try {
-    if (expenses.filter(e => e.photo).length > 0) {
-      // Si esto tarda mucho, el navegador podría bloquear la descarga posterior.
-      // Es vital que esta función sea rápida.
-      photoUrl = await uploadAndGetPhotoUrl();
-    }
-  } catch (e) {
-    console.error("Error subiendo fotos:", e);
-    // Continuamos aunque fallen las fotos para no bloquear el Excel
+// ── EXCEL (todos los usuarios pueden exportar) ──
+window.exportExcel=function(){
+  if(!expenses.length){showToast('No hay gastos para exportar');return;}
+  // Get the tokenized URL for the photo report
+  // This URL works for ANYONE — no login required to open it
+  let photoUrl=null;
+  if(expenses.filter(e=>e.photo).length>0){
+    // Upload latest version and get fresh token URL
+    photoUrl=await uploadAndGetPhotoUrl();
   }
 
-  const month = monthLabel();
-  const wb = XLSX.utils.book_new();
-  const groups = {};
-  
-  expenses.forEach(e => {
-    const cur = e.currency || 'EUR';
-    if (!groups[cur]) groups[cur] = [];
-    groups[cur].push(e);
+  const photoUrl=currentUser?(storageUrl(currentUser.uid)+'&v='+Date.now()):'';
+  const month=monthLabel(),wb=XLSX.utils.book_new();
+  const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
+  Object.entries(groups).forEach(([code,exps])=>{
+    const c=CURRENCIES[code]||CURRENCIES.EUR,sym=c.symbol,amtCol='Importe ('+sym+')';
+    const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const rows=sorted.map(e=>({Fecha:e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'Sin fecha',Establecimiento:e.name,Categoría:e.category,'Método de pago':e.payment==='tarjeta'?'Tarjeta':'Efectivo',[amtCol]:e.amount,Notas:e.notes||'','Ver Fotos':photoUrl?'📷 ABRIR INFORME':''}));
+    const tot=exps.reduce((s,e)=>s+e.amount,0),tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0),efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
+    rows.push({});rows.push({Fecha:'TOTAL',[amtCol]:tot});rows.push({Fecha:'Tarjeta',[amtCol]:tar});rows.push({Fecha:'Efectivo',[amtCol]:efe});
+    const ws=XLSX.utils.json_to_sheet(rows);
+    ws['!cols']=[{wch:13},{wch:30},{wch:13},{wch:14},{wch:13},{wch:22},{wch:15}];
+    if(photoUrl)sorted.forEach((_,i)=>{const r=XLSX.utils.encode_cell({r:i+1,c:6});if(!ws[r])ws[r]={t:'s',v:'📷 ABRIR INFORME'};ws[r].l={Target:photoUrl,Tooltip:'Ver informe de fotos del mes'};});
+    XLSX.utils.book_append_sheet(wb,ws,code+' '+sym);
   });
-
-  Object.entries(groups).forEach(([code, exps]) => {
-    const c = CURRENCIES[code] || CURRENCIES.EUR;
-    const sym = c.symbol;
-    const amtCol = 'Importe (' + sym + ')';
-    const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-    
-    const rows = sorted.map(e => ({
-      Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-      Establecimiento: e.name,
-      Categoría: e.category,
-      'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-      [amtCol]: e.amount,
-      Notas: e.notes || '',
-      'Ver Fotos': photoUrl ? '📷 VER INFORME' : ''
-    }));
-
-    const tot = exps.reduce((s, e) => s + e.amount, 0);
-    const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
-    const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
-    
-    rows.push({}); 
-    rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
-    rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
-    rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [{ wch: 13 }, { wch: 30 }, { wch: 13 }, { wch: 14 }, { wch: 13 }, { wch: 22 }, { wch: 16 }];
-
-    if (photoUrl) {
-      sorted.forEach((_, i) => {
-        const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
-        if (!ws[cellRef]) ws[cellRef] = { t: 's', v: '📷 VER INFORME' };
-        ws[cellRef].l = { Target: photoUrl, Tooltip: 'Ver informe de fotos' };
-      });
-    }
-    XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
-  });
-
-  if (Object.keys(groups).length > 1) {
-    const sRows = Object.entries(groups).map(([code, exps]) => {
-      const c = CURRENCIES[code] || CURRENCIES.EUR;
-      return { 
-        Moneda: c.name, 
-        Símbolo: c.symbol, 
-        Gastos: exps.length, 
-        Total: exps.reduce((s, e) => s + e.amount, 0), 
-        'Con foto': exps.filter(e => e.photo).length 
-      };
-    });
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sRows), 'Resumen');
-  }
-
-  // ── EL CAMBIO CLAVE ESTÁ AQUÍ ──
-  try {
-      // --- PARTE FINAL DEL CÓDIGO CORREGIDA ---
-  try {
-    const fileName = 'Gastos_' + month.replace(/\s/g, '_') + '.xlsx';
-    
-    // Generar los datos en base64 para evitar problemas de Blobs
-    const xlsxOut = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
-    const dataUri = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + xlsxOut;
-
-    // En móviles, a veces es mejor abrir en una pestaña nueva para forzar la descarga
-    const link = document.createElement('a');
-    link.href = dataUri;
-    link.download = fileName;
-    link.target = '_blank'; // Crucial para Safari móvil
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    showToast('📊 Excel generado ✓');
-  } catch (err) {
-    console.error("Error crítico:", err);
-    showToast('❌ Error al procesar el archivo');
-  };
-
+  if(Object.keys(groups).length>1){const sRows=Object.entries(groups).map(([code,exps])=>{const c=CURRENCIES[code]||CURRENCIES.EUR;return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,Total:exps.reduce((s,e)=>s+e.amount,0),'Con foto':exps.filter(e=>e.photo).length};});XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sRows),'Resumen');}
+  const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download='Gastos_'+month.replace(' ','_')+'.xlsx';a.style.display='none';
+  document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
+  showToast('📊 Excel descargado ✓');
+};
 
 
   
