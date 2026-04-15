@@ -1141,14 +1141,24 @@ window.exportExcel=async function(){
   if(!expenses.length){showToast('No hay gastos para exportar');return;}
   showToast('⏳ Preparando Excel...');
  
-  // Get the tokenized URL for the photo report
-  // This URL works for ANYONE — no login required to open it
-  let photoUrl=null;
-  if(expenses.filter(e=>e.photo).length>0){
-    // Upload latest version and get fresh token URL
-    photoUrl=await uploadAndGetPhotoUrl();
+// 1. Preparamos la variable UNA SOLA VEZ
+  let photoUrl = "";
+
+  try {
+    // 2. Si hay gastos con foto, intentamos la subida pesada (await)
+    if (expenses.some(e => e.photo)) {
+      photoUrl = await uploadAndGetPhotoUrl();
+    } 
+    
+    // 3. Si después de lo anterior sigue vacío, usamos la URL determinista como plan B
+    if (!photoUrl && currentUser) {
+      photoUrl = storageUrl(currentUser.uid) + '&v=' + Date.now();
+    }
+  } catch (err) {
+    console.error("Error en photoUrl:", err);
+    // Si todo falla pero hay usuario, al menos intentamos la URL básica
+    if(currentUser) photoUrl = storageUrl(currentUser.uid) + '&v=' + Date.now();
   }
- const photoUrl=currentUser?(storageUrl(currentUser.uid)+'&v='+Date.now()):'';
   const month=monthLabel(),wb=XLSX.utils.book_new();
   const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
  
