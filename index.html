@@ -1137,87 +1137,101 @@ window.showCharts=function(){
 };
 
 // ── EXCEL ──
-window.exportExcel=async function(){
-  if(!expenses.length){showToast('No hay gastos para exportar');return;}
+// ── EXCEL CORREGIDO ──
+window.exportExcel = async function() {
+  if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
+  
+  // 1. Mostrar estado inicial
   showToast('⏳ Preparando Excel...');
 
-  // Get the tokenized URL for the photo report
-  // This URL works for ANYONE — no login required to open it
-  let photoUrl=null;
-  if(expenses.filter(e=>e.photo).length>0){
-    // Upload latest version and get fresh token URL
-    photoUrl=await uploadAndGetPhotoUrl();
+  let photoUrl = null;
+  try {
+    if (expenses.filter(e => e.photo).length > 0) {
+      // Si esto tarda mucho, el navegador podría bloquear la descarga posterior.
+      // Es vital que esta función sea rápida.
+      photoUrl = await uploadAndGetPhotoUrl();
+    }
+  } catch (e) {
+    console.error("Error subiendo fotos:", e);
+    // Continuamos aunque fallen las fotos para no bloquear el Excel
   }
 
-  const month=monthLabel(),wb=XLSX.utils.book_new();
-  const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
-
-  Object.entries(groups).forEach(([code,exps])=>{
-    const c=CURRENCIES[code]||CURRENCIES.EUR,sym=c.symbol;
-    const amtCol='Importe ('+sym+')';
-    const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
-    const rows=sorted.map(e=>({
-      Fecha:e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'Sin fecha',
-      Establecimiento:e.name,
-      Categoría:e.category,
-      'Método de pago':e.payment==='tarjeta'?'Tarjeta':'Efectivo',
-      [amtCol]:e.amount,
-      Notas:e.notes||'',
-      'Ver Fotos':photoUrl?'📷 VER INFORME':''
-    }));
-    const tot=exps.reduce((s,e)=>s+e.amount,0);
-    const tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0);
-    const efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
-    rows.push({});rows.push({Fecha:'TOTAL',[amtCol]:tot});
-    rows.push({Fecha:'Tarjeta',[amtCol]:tar});rows.push({Fecha:'Efectivo',[amtCol]:efe});
-
-    const ws=XLSX.utils.json_to_sheet(rows);
-    ws['!cols']=[{wch:13},{wch:30},{wch:13},{wch:14},{wch:13},{wch:22},{wch:16}];
-
-    // Add hyperlink with tokenized URL — opens for ANYONE, any device
-    if(photoUrl){
-      sorted.forEach((_,i)=>{
-        const cellRef=XLSX.utils.encode_cell({r:i+1,c:6});
-        if(!ws[cellRef])ws[cellRef]={t:'s',v:'📷 VER INFORME'};
-        ws[cellRef].l={Target:photoUrl,Tooltip:'Ver informe de fotos del mes'};
-      });
-    }
-    XLSX.utils.book_append_sheet(wb,ws,code+' '+sym);
+  const month = monthLabel();
+  const wb = XLSX.utils.book_new();
+  const groups = {};
+  
+  expenses.forEach(e => {
+    const cur = e.currency || 'EUR';
+    if (!groups[cur]) groups[cur] = [];
+    groups[cur].push(e);
   });
 
-  if(Object.keys(groups).length>1){
-    const sRows=Object.entries(groups).map(([code,exps])=>{const c=CURRENCIES[code]||CURRENCIES.EUR;return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,Total:exps.reduce((s,e)=>s+e.amount,0),'Con foto':exps.filter(e=>e.photo).length};});
-    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sRows),'Resumen');
+  Object.entries(groups).forEach(([code, exps]) => {
+    const c = CURRENCIES[code] || CURRENCIES.EUR;
+    const sym = c.symbol;
+    const amtCol = 'Importe (' + sym + ')';
+    const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    
+    const rows = sorted.map(e => ({
+      Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
+      Establecimiento: e.name,
+      Categoría: e.category,
+      'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+      [amtCol]: e.amount,
+      Notas: e.notes || '',
+      'Ver Fotos': photoUrl ? '📷 VER INFORME' : ''
+    }));
+
+    const tot = exps.reduce((s, e) => s + e.amount, 0);
+    const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
+    const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
+    
+    rows.push({}); 
+    rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
+    rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
+    rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{ wch: 13 }, { wch: 30 }, { wch: 13 }, { wch: 14 }, { wch: 13 }, { wch: 22 }, { wch: 16 }];
+
+    if (photoUrl) {
+      sorted.forEach((_, i) => {
+        const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
+        if (!ws[cellRef]) ws[cellRef] = { t: 's', v: '📷 VER INFORME' };
+        ws[cellRef].l = { Target: photoUrl, Tooltip: 'Ver informe de fotos' };
+      });
+    }
+    XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
+  });
+
+  if (Object.keys(groups).length > 1) {
+    const sRows = Object.entries(groups).map(([code, exps]) => {
+      const c = CURRENCIES[code] || CURRENCIES.EUR;
+      return { 
+        Moneda: c.name, 
+        Símbolo: c.symbol, 
+        Gastos: exps.length, 
+        Total: exps.reduce((s, e) => s + e.amount, 0), 
+        'Con foto': exps.filter(e => e.photo).length 
+      };
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sRows), 'Resumen');
   }
 
-  const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  // ... (tu código anterior igual hasta generar el blob)
-
-  const blob = new Blob([xlsxOut], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-  
-  // SOLUCIÓN PARA MÓVILES: Usar un lector de archivos o disparar la descarga de forma más directa
-  if (navigator.msSaveBlob) { // Para IE
-      navigator.msSaveBlob(blob, 'Gastos_' + month.replace(' ', '_') + '.xlsx');
-  } else {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'Gastos_' + month.replace(' ', '_') + '.xlsx';
-      
-      // Añadimos target="_blank" que ayuda en algunos navegadores móviles
-      a.target = '_blank'; 
-      
-      document.body.appendChild(a);
-      a.click();
-      
-      // Esperamos un poco más antes de limpiar
-      setTimeout(() => {
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-      }, 5000); 
+  // ── EL CAMBIO CLAVE ESTÁ AQUÍ ──
+  try {
+    const fileName = 'Gastos_' + month.replace(/\s/g, '_') + '.xlsx';
+    
+    // XLSX.writeFile detecta si estás en móvil o PC y usa el método de guardado 
+    // más apropiado para cada entorno automáticamente.
+    XLSX.writeFile(wb, fileName);
+    
+    showToast('📊 Excel descargado ✓' + (photoUrl ? ' · con fotos' : ''));
+  } catch (err) {
+    console.error("Fallo en descarga:", err);
+    showToast('❌ Error al generar el archivo');
   }
-  showToast('📊 Excel descargado ✓');
-  }; 
+};
 
 
   
