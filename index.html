@@ -1137,82 +1137,67 @@ window.showCharts=function(){
 };
 
 // ── EXCEL ──
-window.exportExcel = async function() {
-    if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
-    showToast('⏳ Generando Excel...');
+window.exportExcel=async function(){
+  if(!expenses.length){showToast('No hay gastos para exportar');return;}
+  showToast('⏳ Preparando Excel...');
 
-    // 1. OBTENCIÓN DE URL CON SEGURO DE FALLOS
-    let photoUrl = "";
-    try {
-        if (expenses.some(e => e.photo)) {
-            // Esperamos la URL real. Si falla, el catch evita que el código se muera.
-            const result = await uploadAndGetPhotoUrl();
-            photoUrl = result || ""; 
-        }
-    } catch (err) {
-        console.error("Error crítico obteniendo URL:", err);
-        photoUrl = "ERROR_URL"; // Marca visual para saber que falló la subida
+  // Get the tokenized URL for the photo report
+  // This URL works for ANYONE — no login required to open it
+  let photoUrl=null;
+  if(expenses.filter(e=>e.photo).length>0){
+    // Upload latest version and get fresh token URL
+    photoUrl=await uploadAndGetPhotoUrl();
+  }
+
+  const month=monthLabel(),wb=XLSX.utils.book_new();
+  const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
+
+  Object.entries(groups).forEach(([code,exps])=>{
+    const c=CURRENCIES[code]||CURRENCIES.EUR,sym=c.symbol;
+    const amtCol='Importe ('+sym+')';
+    const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+    const rows=sorted.map(e=>({
+      Fecha:e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'Sin fecha',
+      Establecimiento:e.name,
+      Categoría:e.category,
+      'Método de pago':e.payment==='tarjeta'?'Tarjeta':'Efectivo',
+      [amtCol]:e.amount,
+      Notas:e.notes||'',
+      'Ver Fotos':photoUrl?'📷 VER INFORME':''
+    }));
+    const tot=exps.reduce((s,e)=>s+e.amount,0);
+    const tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0);
+    const efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
+    rows.push({});rows.push({Fecha:'TOTAL',[amtCol]:tot});
+    rows.push({Fecha:'Tarjeta',[amtCol]:tar});rows.push({Fecha:'Efectivo',[amtCol]:efe});
+
+    const ws=XLSX.utils.json_to_sheet(rows);
+    ws['!cols']=[{wch:13},{wch:30},{wch:13},{wch:14},{wch:13},{wch:22},{wch:16}];
+
+    // Add hyperlink with tokenized URL — opens for ANYONE, any device
+    if(photoUrl){
+      sorted.forEach((_,i)=>{
+        const cellRef=XLSX.utils.encode_cell({r:i+1,c:6});
+        if(!ws[cellRef])ws[cellRef]={t:'s',v:'📷 VER INFORME'};
+        ws[cellRef].l={Target:photoUrl,Tooltip:'Ver informe de fotos del mes'};
+      });
     }
+    XLSX.utils.book_append_sheet(wb,ws,code+' '+sym);
+  });
 
-    const month = monthLabel(), wb = XLSX.utils.book_new();
-    const groups = {};
-    expenses.forEach(e => { 
-        const cur = e.currency || 'EUR'; 
-        if (!groups[cur]) groups[cur] = []; 
-        groups[cur].push(e); 
-    });
+  if(Object.keys(groups).length>1){
+    const sRows=Object.entries(groups).map(([code,exps])=>{const c=CURRENCIES[code]||CURRENCIES.EUR;return{Moneda:c.name,Símbolo:c.symbol,Gastos:exps.length,Total:exps.reduce((s,e)=>s+e.amount,0),'Con foto':exps.filter(e=>e.photo).length};});
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(sRows),'Resumen');
+  }
 
-    Object.entries(groups).forEach(([code, exps]) => {
-        const c = CURRENCIES[code] || CURRENCIES.EUR, sym = c.symbol;
-        const amtCol = 'Importe (' + sym + ')';
-        const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-
-        // 2. MAPEO DE FILAS (Forzamos que la columna 7 siempre tenga datos)
-        const rows = sorted.map(e => ({
-            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-            Establecimiento: e.name || "",
-            Categoría: e.category || "",
-            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-            [amtCol]: e.amount,
-            Notas: e.notes || '',
-            'Ver Fotos': photoUrl === "ERROR_URL" ? "⚠️ Error Subida" : (photoUrl ? "📷 VER INFORME" : "Sin fotos")
-        }));
-
-        const tot = exps.reduce((s, e) => s + e.amount, 0);
-        rows.push({}, { Fecha: 'TOTAL', [amtCol]: tot });
-
-        const ws = XLSX.utils.json_to_sheet(rows);
-
-        // 3. INYECCIÓN AGRESIVA DE LINKS (Recorrido manual de celdas)
-        if (photoUrl && photoUrl !== "ERROR_URL") {
-            const range = XLSX.utils.decode_range(ws['!ref']);
-            // Empezamos en i=1 (fila 2 de Excel) para saltar el encabezado
-            for (let i = 1; i <= sorted.length; i++) {
-                const cellRef = XLSX.utils.encode_cell({ r: i, c: 6 }); // Columna G
-                
-                ws[cellRef] = {
-                    t: 's',
-                    v: '📷 VER INFORME',
-                    l: { Target: photoUrl, Tooltip: 'Abrir informe de fotos' },
-                    s: { 
-                        font: { color: { rgb: "0563C1" }, underline: true },
-                        alignment: { horizontal: "center" } 
-                    }
-                };
-            }
-        }
-
-        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}, {wch:25}];
-        XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
-    });
-
-    // 4. DESCARGA FINAL
-    try {
-        XLSX.writeFile(wb, `Gastos_${month.replace(/\s+/g, '_')}.xlsx`);
-        showToast('📊 Excel generado ✓');
-    } catch (e) {
-        showToast('❌ Error al guardar el archivo');
-    }
+  const xlsxOut=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([xlsxOut],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='Gastos_'+month.replace(' ','_')+'.xlsx';
+  a.style.display='none';document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
+  showToast('📊 Excel descargado ✓'+(photoUrl?' · con link de fotos':''));
 };
 
   
