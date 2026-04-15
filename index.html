@@ -1141,21 +1141,17 @@ window.exportExcel = async function() {
     if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
     showToast('⏳ Preparando Excel...');
 
+    // 1. INTENTAMOS OBTENER LA URL (pero aunque falle, seguimos)
     let photoUrl = null;
     try {
-        // Intentamos obtener la URL. Si falla, photoUrl seguirá siendo null pero el código NO se parará.
         if (expenses.some(e => e.photo)) {
-            photoUrl = await uploadAndGetPhotoUrl().catch(err => {
-                console.error("Error en upload:", err);
-                return null; 
-            });
+            photoUrl = await uploadAndGetPhotoUrl();
         }
     } catch (err) {
-        console.error("Error general de fotos:", err);
+        console.error("Error obteniendo URL de fotos:", err);
     }
 
-    const month = monthLabel();
-    const wb = XLSX.utils.book_new();
+    const month = monthLabel(), wb = XLSX.utils.book_new();
     const groups = {};
     expenses.forEach(e => { 
         const cur = e.currency || 'EUR'; 
@@ -1164,62 +1160,45 @@ window.exportExcel = async function() {
     });
 
     Object.entries(groups).forEach(([code, exps]) => {
-        const c = CURRENCIES[code] || CURRENCIES.EUR;
-        const sym = c.symbol;
+        const c = CURRENCIES[code] || CURRENCIES.EUR, sym = c.symbol;
         const amtCol = 'Importe (' + sym + ')';
         const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
-        // CRÍTICO: Aquí definimos las filas. 
-        // Forzamos que la columna 'Ver Fotos' exista SIEMPRE en el objeto.
-        const rows = sorted.map(e => {
-            const row = {
-                Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-                Establecimiento: e.name || '',
-                Categoría: e.category || '',
-                'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-                [amtCol]: e.amount || 0,
-                Notas: e.notes || ''
-            };
-            
-            // Añadimos la columna "Ver Fotos" explícitamente al final
-            row['Ver Fotos'] = photoUrl ? '📷 VER INFORME' : 'Sin fotos';
-            return row;
-        });
+        // 2. CREACIÓN DE FILAS (Forzamos el texto para ver si la columna responde)
+        const rows = sorted.map(e => ({
+            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
+            Establecimiento: e.name,
+            Categoría: e.category,
+            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+            [amtCol]: e.amount,
+            Notas: e.notes || '',
+            'Ver Fotos': photoUrl ? '📷 VER INFORME' : '❌ SIN LINK' // <--- SI SALE ESTO, ES QUE photoUrl ESTÁ VACÍO
+        }));
 
-        // Añadimos los totales
         const tot = exps.reduce((s, e) => s + e.amount, 0);
-        rows.push({}); 
-        rows.push({ Fecha: 'TOTAL', [amtCol]: tot, 'Ver Fotos': '' });
+        rows.push({}, { Fecha: 'TOTAL', [amtCol]: tot });
 
         const ws = XLSX.utils.json_to_sheet(rows);
 
-        // Si hay URL, inyectamos el link oficial en cada celda de la columna G (índice 6)
+        // 3. INYECTAMOS EL LINK (Solo si tenemos la URL)
         if (photoUrl) {
             sorted.forEach((_, i) => {
                 const cellRef = XLSX.utils.encode_cell({ r: i + 1, c: 6 });
                 ws[cellRef] = {
                     t: 's',
                     v: '📷 VER INFORME',
-                    l: { Target: photoUrl, Tooltip: 'Abrir informe de fotos' },
+                    l: { Target: photoUrl, Tooltip: 'Abrir fotos' },
                     s: { font: { color: { rgb: "0563C1" }, underline: true } }
                 };
             });
         }
 
-        // Ajustamos el ancho de las columnas (la 7ª columna es la de fotos)
-        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}, {wch:20}];
-        
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
-    try {
-        const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-        showToast('📊 Excel descargado ✓');
-    } catch (e) {
-        console.error("Error al guardar:", e);
-        showToast('❌ Error al generar archivo');
-    }
+    // 4. DESCARGA DIRECTA
+    XLSX.writeFile(wb, `Gastos_${month.replace(/\s+/g, '_')}.xlsx`);
+    showToast('📊 Excel generado ✓');
 };
 
   
