@@ -1341,9 +1341,27 @@ window.showAdminUserDetail=async function(uid){
 window.adminTogglePremium=async function(){
   if(!adminSelectedUser||!isAdmin)return;
   const u=adminSelectedUser;const np=!u.isPremium;
+
+await setDoc(doc(db, 'users', u.uid), {
+            isPremium: np,
+            plan: np ? 'pro' : 'free',
+            premiumHasta: vencimiento
+        }, { merge: true });
+
+ 
   try{
     await setDoc(doc(db,'users',u.uid),{isPremium:np},{merge:true});
+
+isPremium: np,
+            plan: np ? 'pro' : 'free',
+            premiumHasta: vencimiento
+        }, { merge: true });
+
+    
     adminSelectedUser.isPremium=np;
+
+adminSelectedUser.premiumHasta = vencimiento;
+  
     const idx=allAdminUsers.findIndex(x=>x.uid===u.uid);if(idx>-1)allAdminUsers[idx].isPremium=np;
     document.getElementById('admin-detail-sub').textContent=(np?'⭐ Premium':'🔒 Free')+' · '+(u.isAdmin?'🛡️ Admin':'Usuario');
     const btn=document.getElementById('admin-toggle-btn');
