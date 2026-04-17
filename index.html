@@ -1350,12 +1350,16 @@ await setDoc(doc(db, 'users', u.uid), {
 
  
   try{
-    await setDoc(doc(db,'users',u.uid),{isPremium:np},{merge:true});
 
-isPremium: np,
-            plan: np ? 'pro' : 'free',
-            premiumHasta: vencimiento
-        }, { merge: true });
+
+    await setDoc(doc(db, 'users', u.uid), {
+    isPremium: np,
+    plan: np ? 'pro' : 'free',
+    premiumHasta: vencimiento
+}, { merge: true });
+
+    adminSelectedUser.isPremium = np;
+    adminSelectedUser.premiumHasta = vencimiento;
 
     
     adminSelectedUser.isPremium=np;
