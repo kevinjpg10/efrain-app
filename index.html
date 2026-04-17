@@ -863,8 +863,8 @@ function renderList(){
     return '<div class="expense-item" onclick="showDetail(\''+e.id+'\')">'
       +'<div class="exp-icon-wrap" style="background:'+color+'18">'+icon+'</div>'
       +'<div class="exp-info"><div class="exp-name">'+e.name+'</div>'
-      +'<div class="exp-meta"><span class="exp-date">'+ds+'</span><span class="cat-pill" style="background:'+color+'">'+e.category+'</span>'+(e.photo?'<span style="font-size:9px;color:var(--accent)">📷</span>':'')+'</div></div>'
-      +'<div class="exp-right"><span class="exp-amount">'+cur.symbol+e.amount.toFixed(2)+'</span><span style="color:var(--text3);font-size:13px">›</span></div></div>';
+      +'<div class="exp-meta"><span class="exp-date">'+ds+'</span><span class="cat-pill" style="background:'+color+'">'+e.category+'</span>'</div></div>'
+      +'<div class="exp-right"><span class="exp-amount">'+cur.symbol+e.amount.toFixed(2)+'</span><span style="color:var(--text3);font-size:13px">›</span></div></div>'
   }).join('');
 }
 
@@ -1328,7 +1328,6 @@ window.showAdminUserDetail=async function(uid){
       +'<div style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px;margin-bottom:11px;border:1px solid rgba(255,255,255,.05)">'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Email</span><span style="font-size:12px;font-weight:600">'+(u.email||'—')+'</span></div>'
 
-      +(u.premiumHasta ? '<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Vencimiento</span><span style="font-size:12px;font-weight:600;color:#2ecc71">📅 '+new Date(u.premiumHasta).toLocaleDateString()+'</span></div>' : '')
 
       +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Registro</span><span style="font-size:12px">'+created+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Plan</span><span style="font-size:12px">'+(u.isPremium?'⭐ Premium':'🔒 Free')+'</span></div>'
@@ -1354,12 +1353,6 @@ await setDoc(doc(db, 'users', u.uid), {
  
   try{
 
-
-    await setDoc(doc(db, 'users', u.uid), {
-    isPremium: np,
-    plan: np ? 'pro' : 'free',
-    premiumHasta: vencimiento
-}, { merge: true });
 
     adminSelectedUser.isPremium = np;
     adminSelectedUser.premiumHasta = vencimiento;
