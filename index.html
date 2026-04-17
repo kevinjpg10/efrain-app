@@ -1327,6 +1327,9 @@ window.showAdminUserDetail=async function(uid){
       +'<div style="background:var(--bg2);border-radius:9px;padding:11px 7px;text-align:center;border:1px solid rgba(255,255,255,.05)"><div style="font-size:8px;color:var(--text2);text-transform:uppercase;margin-bottom:2px">Fotos</div><div style="font-size:19px;font-weight:800;color:var(--purple)">'+wp+'</div></div></div>'
       +'<div style="background:var(--bg2);border-radius:var(--radius-sm);padding:12px;margin-bottom:11px;border:1px solid rgba(255,255,255,.05)">'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Email</span><span style="font-size:12px;font-weight:600">'+(u.email||'—')+'</span></div>'
+
+      +(u.premiumHasta ? '<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Vencimiento</span><span style="font-size:12px;font-weight:600;color:#2ecc71">📅 '+new Date(u.premiumHasta).toLocaleDateString()+'</span></div>' : '')
+
       +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Registro</span><span style="font-size:12px">'+created+'</span></div>'
       +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2);font-size:12px">Plan</span><span style="font-size:12px">'+(u.isPremium?'⭐ Premium':'🔒 Free')+'</span></div>'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--text2);font-size:12px">UID</span><span style="font-size:9px;color:var(--text3);font-family:monospace;word-break:break-all">'+uid+'</span></div></div>'
