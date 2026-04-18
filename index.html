@@ -1296,7 +1296,7 @@ function renderAdminList(users){
   list.innerHTML=users.map(u=>{
     const init=(u.email||'?').charAt(0).toUpperCase();
     const created=u.createdAt?new Date(u.createdAt).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'—';
-const badges = (u.isPremium ? '<span style="font-size:8px;background:rgba(245,158,11,.2);color:var(--amber);padding:1px 6px;border-radius:7px;font-weight:700">⭐ PRO</span> ' : '') + (u.isAdmin ? '<span style="font-size:8px;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:7px;font-weight:700">🛡️ Admin</span> ' : '') + (u.premiumHasta ? '<span style="font-size:8px;background:rgba(34,197,94,.1);color:#22c55e;padding:1px 6px;border-radius:7px;font-weight:700">📅 ' + new Date(u.premiumHasta).toLocaleDateString() + '</span>' : '');
+const badges = (u.isPremium ? '<span style="font-size:8px;background:rgba(245,158,11,.2);color:var(--amber);padding:1px 6px;border-radius:7px;font-weight:700">⭐ PRO</span> ' : '') + (u.isAdmin ? '<span style="font-size:8px;background:rgba(239,68,68,.2);color:var(--danger);padding:1px 6px;border-radius:7px;font-weight:700">🛡️ Admin</span> ' : '') + (u.premiumHasta ? '<span style="font-size:8px;background:rgba(34,197,94,.1);color:#22c55e;padding:1px 6px;border-radius:7px;font-weight:700">📅 ' + new Date(u.premiumHasta).toLocaleDateString() + '</span>' :'');
 
     
     return '<div class="admin-user-item" onclick="showAdminUserDetail(\''+u.uid+'\')"><div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--purple2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0">'+init+'</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(u.email||u.uid)+'</div><div style="display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap"><span style="font-size:10px;color:var(--text2)">'+created+'</span>'+badges+'</div></div><span style="color:var(--text3);font-size:14px">›</span></div>';
@@ -1340,19 +1340,43 @@ window.showAdminUserDetail=async function(uid){
   }catch(e){body.innerHTML='<div style="color:var(--danger);padding:18px;font-size:13px">❌ '+e.message+'</div>';}
 };
 
-window.adminTogglePremium=async function(){
-  if(!adminSelectedUser||!isAdmin)return;
-  const u=adminSelectedUser;const np=!u.isPremium;
-  try{
-    await setDoc(doc(db,'users',u.uid),{isPremium:np},{merge:true});
-    adminSelectedUser.isPremium=np;
-    const idx=allAdminUsers.findIndex(x=>x.uid===u.uid);if(idx>-1)allAdminUsers[idx].isPremium=np;
-    document.getElementById('admin-detail-sub').textContent=(np?'⭐ Premium':'🔒 Free')+' · '+(u.isAdmin?'🛡️ Admin':'Usuario');
-    const btn=document.getElementById('admin-toggle-btn');
-    btn.textContent=np?'🔒 Quitar PRO':'⭐ Dar PRO';
-    btn.style.background=np?'linear-gradient(135deg,#ef4444,#dc2626)':'linear-gradient(135deg,#f59e0b,#d97706)';
-    showToast(np?'⭐ Premium activado':'🔒 Premium desactivado');
-  }catch(e){showToast('❌ '+e.message);}
+
+window.adminTogglePremium = async function() {
+    if (!adminSelectedUser || isAdmin) return; // Asegúrate de que isAdmin sea correcto según tu código
+    
+    const u = adminSelectedUser;
+    const np = !u.isPremium;
+    
+    // 1. Preparamos los datos
+    const dataToUpdate = { isPremium: np };
+    if (np) {
+        dataToUpdate.premiumHasta = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
+    } else {
+        dataToUpdate.premiumHasta = null;
+    }
+
+    try {
+        // 2. Guardamos en Firebase una sola vez
+        await setDoc(doc(db, 'users', u.uid), dataToUpdate, { merge: true });
+        
+        // 3. Actualizamos la interfaz
+        adminSelectedUser.isPremium = np;
+        adminSelectedUser.premiumHasta = dataToUpdate.premiumHasta; // Importante actualizar el objeto local
+        
+        const idx = allAdminUsers.findIndex(x => x.uid === u.uid);
+        if (idx > -1) allAdminUsers[idx].isPremium = np;
+        
+        document.getElementById('admin-detail-sub').textContent = (np ? '⭐ Premium' : '🔒 Free') + ' · ' + (u.isAdmin ? '🛡️ Admin' : 'Usuario');
+        
+        const btn = document.getElementById('admin-toggle-btn');
+        btn.textContent = np ? '🔒 Quitar PRO' : '⭐ Dar PRO';
+        btn.style.background = np ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#f59e0b,#d97706)';
+        
+        showToast(np ? '⭐ Premium activado' : '🔒 Premium desactivado');
+    } catch (e) {
+        showToast('❌ ' + e.message);
+        console.error(e);
+    }
 };
 </script>
 </body>
