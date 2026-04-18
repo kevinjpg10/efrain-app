@@ -1351,12 +1351,14 @@ window.adminTogglePremium = async function() {
 
     await updateDoc(doc(db, 'users', u.uid), updates);
     
-    // Sincronizar localmente para que se refleje en el panel
+    // Sincronizar localmente
     u.isPremium = nuevoEstado;
     u.premiumHasta = updates.premiumHasta;
     
-    // Recargar lista y cerrar/actualizar detalle
-    loadAdminUsersList();
+    // CORRECCIÓN: Usamos la función que realmente existe en tu código (renderAdminList)
+    // Asumiendo que necesitas pasarle todos los usuarios o que ella toma allAdminUsers:
+    renderAdminList(allAdminUsers); 
+    
     showAdminUserDetail(u.uid); 
 };
 
