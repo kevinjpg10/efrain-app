@@ -1340,44 +1340,26 @@ window.showAdminUserDetail=async function(uid){
   }catch(e){body.innerHTML='<div style="color:var(--danger);padding:18px;font-size:13px">❌ '+e.message+'</div>';}
 };
 
-
 window.adminTogglePremium = async function() {
-    if (!adminSelectedUser || isAdmin) return; // Asegúrate de que isAdmin sea correcto según tu código
-    
     const u = adminSelectedUser;
-    const np = !u.isPremium;
-    
-    // 1. Preparamos los datos
-    const dataToUpdate = { isPremium: np };
-    if (np) {
-        dataToUpdate.premiumHasta = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
-    } else {
-        dataToUpdate.premiumHasta = null;
-    }
+    const nuevoEstado = !u.isPremium;
 
-    try {
-        // 2. Guardamos en Firebase una sola vez
-        await setDoc(doc(db, 'users', u.uid), dataToUpdate, { merge: true });
-        
-        // 3. Actualizamos la interfaz
-        adminSelectedUser.isPremium = np;
-        adminSelectedUser.premiumHasta = dataToUpdate.premiumHasta; // Importante actualizar el objeto local
-        
-        const idx = allAdminUsers.findIndex(x => x.uid === u.uid);
-        if (idx > -1) allAdminUsers[idx].isPremium = np;
-        
-        document.getElementById('admin-detail-sub').textContent = (np ? '⭐ Premium' : '🔒 Free') + ' · ' + (u.isAdmin ? '🛡️ Admin' : 'Usuario');
-        
-        const btn = document.getElementById('admin-toggle-btn');
-        btn.textContent = np ? '🔒 Quitar PRO' : '⭐ Dar PRO';
-        btn.style.background = np ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#f59e0b,#d97706)';
-        
-        showToast(np ? '⭐ Premium activado' : '🔒 Premium desactivado');
-    } catch (e) {
-        showToast('❌ ' + e.message);
-        console.error(e);
-    }
+    const updates = {
+        isPremium: nuevoEstado,
+        premiumHasta: nuevoEstado ? new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString() : null
+    };
+
+    await updateDoc(doc(db, 'users', u.uid), updates);
+    
+    // Sincronizar localmente para que se refleje en el panel
+    u.isPremium = nuevoEstado;
+    u.premiumHasta = updates.premiumHasta;
+    
+    // Recargar lista y cerrar/actualizar detalle
+    loadAdminUsersList();
+    showAdminUserDetail(u.uid); 
 };
+
 </script>
 </body>
 </html>
