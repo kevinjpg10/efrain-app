@@ -1156,6 +1156,36 @@ window.exportExcel = async function() {
         groups[cur].push(e); 
     });
 
+// 1. Crear hoja de DASHBOARD "Pro"
+const tot = expenses.reduce((s, e) => s + e.amount, 0);
+const tar = expenses.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
+const efe = expenses.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
+
+const dashboardData = [
+    { Resumen: '📊 RESUMEN EJECUTIVO', Valor: '' },
+    { Resumen: 'TOTAL GENERAL', Valor: tot },
+    { Resumen: '--------------------', Valor: '---' },
+    { Resumen: 'Total Tarjeta', Valor: tar },
+    { Resumen: 'Total Efectivo', Valor: efe }
+];
+
+const wsDash = XLSX.utils.json_to_sheet(dashboardData);
+
+// ESTILO PROFESIONAL:
+// Ajuste de columnas para que no se vean apretadas
+wsDash['!cols'] = [{wch: 25}, {wch: 20}];
+
+// Aplicar estilos básicos (si tu versión de XLSX lo permite)
+// Poner en negrita las celdas de los títulos
+['A1', 'A2', 'A4', 'A5'].forEach(cell => {
+    if(!wsDash[cell]) return;
+    wsDash[cell].s = { font: { bold: true } };
+});
+
+XLSX.utils.book_append_sheet(wb, wsDash, "📊 Dashboard");
+  
+});
+
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
