@@ -1153,35 +1153,40 @@ window.exportExcel = async function() {
 
 
     // 📊 HOJA RESUMEN PROFESIONAL (PRIMERA)
-    // ─────────────────────────────
-    const summary = createSummarySheet(groups);
-    const wsSummary = XLSX.utils.json_to_sheet(summary);
 
-    wsSummary["!cols"] = [
-        { wch: 25 },
-        { wch: 18 },
-        { wch: 18 },
-        { wch: 18 },
-        { wch: 18 },
-        { wch: 18 }
-    ];
+window.exportExcel = async function() {
+    if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
+    showToast('⏳ Preparando Excel...');
 
-    XLSX.utils.book_append_sheet(wb, wsSummary, "📊 RESUMEN");
-    
-    // Agrupar por moneda
+    const month = monthLabel();
+    const wb = XLSX.utils.book_new();
+    const groups = {};
+
+    // Primero agrupamos los gastos
     expenses.forEach(e => { 
         const cur = e.currency || 'EUR'; 
         if (!groups[cur]) groups[cur] = []; 
         groups[cur].push(e); 
     });
 
+    // 📊 1. HOJA RESUMEN PROFESIONAL (Generada internamente)
+    const summaryData = [
+        { Concepto: 'TOTAL GENERAL', Importe: expenses.reduce((s, e) => s + e.amount, 0) },
+        { Concepto: 'Total Tarjeta', Importe: expenses.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0) },
+        { Concepto: 'Total Efectivo', Importe: expenses.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0) }
+    ];
+    
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+    wsSummary["!cols"] = [{ wch: 25 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, wsSummary, "📊 RESUMEN");
+    
+    // 📄 2. HOJAS DETALLADAS POR MONEDA
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
         const amtCol = 'Importe (' + sym + ')';
         const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
 
-        // 2. CREACIÓN DE FILAS
         const rows = sorted.map(e => ({
             Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
             Establecimiento: e.name || "",
@@ -1191,7 +1196,6 @@ window.exportExcel = async function() {
             Notas: e.notes || ''
         }));
 
-        // Añadir totales al final de la tabla
         const tot = exps.reduce((s, e) => s + e.amount, 0);
         const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
         const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
@@ -1202,8 +1206,6 @@ window.exportExcel = async function() {
         rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
 
         const ws = XLSX.utils.json_to_sheet(rows);
-
-        // 3. AJUSTE DE COLUMNAS (6 columnas totales)
         ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}];
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
