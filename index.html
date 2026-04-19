@@ -1143,175 +1143,36 @@ window.showCharts=function(){
 // ─────────────────────────────────────────────
 // EXPORTACIÓN EXCEL - VERSION PROFESIONAL
 // ─────────────────────────────────────────────
-
 window.exportExcel = async function () {
     if (!Array.isArray(expenses) || expenses.length === 0) {
         showToast('No hay gastos para exportar');
         return;
     }
 
-    showToast('⏳ Generando informe Excel...');
+    showToast('⏳ Generando Excel...');
 
     const month = monthLabel();
     const wb = XLSX.utils.book_new();
 
-    const photoUrl = await resolvePhotoUrl().catch(err => {
-        console.error("Photo URL error:", err);
-        return "";
-    });
-
     const grouped = groupByCurrency(expenses);
 
+    // 📊 1. HOJA RESUMEN (PRIMERO)
+    createSummarySheet(wb, grouped);
+
+    // 📄 2. HOJAS DETALLADAS
     Object.entries(grouped).forEach(([currency, items]) => {
-        createCurrencySheet(wb, currency, items, photoUrl);
+        createCurrencySheet(wb, currency, items);
     });
 
     try {
         const fileName = `Informe_Gastos_${sanitizeFileName(month)}.xlsx`;
         XLSX.writeFile(wb, fileName);
-        showToast('📊 Informe generado correctamente');
+        showToast('📊 Excel generado correctamente');
     } catch (err) {
         console.error(err);
         showToast('❌ Error al generar el archivo');
     }
 };
-
-
-// ─────────────────────────────────────────────
-// RESOLUCIÓN SEGURA DE URL
-// ─────────────────────────────────────────────
-async function resolvePhotoUrl() {
-    if (!expenses.some(e => e.photo)) return "";
-
-    if (typeof uploadAndGetPhotoUrl === "function") {
-        const url = await uploadAndGetPhotoUrl();
-        if (url) return url;
-    }
-
-    if (typeof currentUser !== "undefined" && currentUser?.uid) {
-        return storageUrl(currentUser.uid) + "&v=" + Date.now();
-    }
-
-    return "";
-}
-
-
-// ─────────────────────────────────────────────
-// AGRUPACIÓN POR MONEDA
-// ─────────────────────────────────────────────
-function groupByCurrency(data) {
-    return data.reduce((acc, item) => {
-        const key = item.currency || "EUR";
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-    }, {});
-}
-
-
-// ─────────────────────────────────────────────
-// CREACIÓN DE HOJA POR MONEDA
-// ─────────────────────────────────────────────
-function createCurrencySheet(wb, code, items, photoUrl) {
-    const currency = CURRENCIES[code] || CURRENCIES.EUR;
-    const symbol = currency.symbol;
-
-    const amountKey = `Importe (${symbol})`;
-
-    const sorted = [...items].sort(
-        (a, b) => new Date(a.date || 0) - new Date(b.date || 0)
-    );
-
-    const rows = sorted.map(item => ({
-        Fecha: formatDate(item.date),
-        Establecimiento: item.name || "",
-        Categoría: item.category || "",
-        "Método de pago": normalizePayment(item.payment),
-        [amountKey]: item.amount || 0,
-        Notas: item.notes || "",
-        "Evidencia": photoUrl ? "📷 Abrir informe" : "Sin evidencia"
-    }));
-
-    appendTotals(rows, items, amountKey);
-
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    applyPhotoLinks(ws, sorted.length, photoUrl);
-
-    ws["!cols"] = [
-        { wch: 14 },
-        { wch: 25 },
-        { wch: 18 },
-        { wch: 15 },
-        { wch: 14 },
-        { wch: 22 },
-        { wch: 20 }
-    ];
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        `${code} ${symbol}`
-    );
-}
-
-
-// ─────────────────────────────────────────────
-// LINKS (COMPATIBLE iOS)
-// ─────────────────────────────────────────────
-function applyPhotoLinks(ws, length, url) {
-    if (!url) return;
-
-    for (let i = 1; i <= length; i++) {
-        const cell = XLSX.utils.encode_cell({ r: i, c: 6 });
-
-        ws[cell] = {
-            t: "s",
-            v: "📷 Abrir informe",
-            l: {
-                Target: url,
-                Tooltip: "Ver evidencias"
-            }
-        };
-    }
-}
-
-
-// ─────────────────────────────────────────────
-// TOTALES
-// ─────────────────────────────────────────────
-function appendTotals(rows, items, key) {
-    const total = sum(items);
-    const card = sum(items.filter(i => i.payment === "tarjeta"));
-    const cash = sum(items.filter(i => i.payment === "efectivo"));
-
-    rows.push({});
-    rows.push({ Fecha: "TOTAL", [key]: total });
-    rows.push({ Fecha: "Tarjeta", [key]: card });
-    rows.push({ Fecha: "Efectivo", [key]: cash });
-}
-
-function sum(arr) {
-    return arr.reduce((s, e) => s + (e.amount || 0), 0);
-}
-
-
-// ─────────────────────────────────────────────
-// UTILIDADES
-// ─────────────────────────────────────────────
-function formatDate(date) {
-    if (!date) return "Sin fecha";
-    return new Date(date + "T12:00:00").toLocaleDateString("es-ES");
-}
-
-function normalizePayment(p) {
-    return p === "tarjeta" ? "Tarjeta" : "Efectivo";
-}
-
-function sanitizeFileName(name) {
-    return name.replace(/\s+/g, "_").replace(/[^\w\-]/g, "");
-}
-
   
 // ── PDF (todos los usuarios pueden exportar) ──
 window.exportPDF=function(){
