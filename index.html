@@ -160,38 +160,7 @@ select.form-input option{background:var(--bg2)}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.settings-section-title {
-    font-size: 11px;
-    color: #6fd3ff;
-    text-transform: uppercase;
-    letter-spacing: .8px;
-    margin-bottom: 7px;
-    font-weight: 700;
 
-    animation: breathe 2.5s ease-in-out infinite;
-    text-shadow:
-        0 0 3px #6fd3ff,
-        0 0 6px #3bbcff,
-        0 0 12px #1aa3ff;
-}
-
-@keyframes breathe {
-    0%, 100% {
-        opacity: 0.85;
-        text-shadow:
-            0 0 2px #6fd3ff,
-            0 0 4px #3bbcff,
-            0 0 8px #1aa3ff;
-    }
-    50% {
-        opacity: 1;
-        text-shadow:
-            0 0 4px #8ae6ff,
-            0 0 8px #6fd3ff,
-            0 0 16px #3bbcff,
-            0 0 24px #1aa3ff;
-    }
-}
 
 
 
@@ -341,9 +310,7 @@ select.form-input option{background:var(--bg2)}
     <div class="settings-section">
 
       
-      <div class="settings-section-title">
-  📤 ¡Exporta tu Informe Profesional!
-</div>
+<div class="settings-section-title">📤 ¡Exporta tu Informe Profesional!</div>
 
       
       <div style="display:flex;gap:7px;margin-bottom:7px">
