@@ -161,35 +161,94 @@ select.form-input option{background:var(--bg2)}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 .neon-export-title {
+  position: relative;
   color: #39ff14 !important;
-  font-weight: 800 !important;
+  font-weight: 900 !important;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  
-  /* Efecto Neón */
-  text-shadow: 
-    0 0 5px #39ff14, 
-    0 0 10px #39ff14, 
-    0 0 20px #39ff14;
-    
-  /* Animación de respiración */
-  animation: breatheNeon 2.5s ease-in-out infinite;
-  
-  /* Evitar que se mueva el diseño al animar */
+  letter-spacing: 1.5px;
   display: inline-block;
   transform-origin: center;
+
+  /* Glow multicapa mucho más profundo */
+  text-shadow:
+    0 0 2px #39ff14,
+    0 0 6px #39ff14,
+    0 0 12px #39ff14,
+    0 0 24px #39ff14,
+    0 0 48px rgba(57, 255, 20, 0.8),
+    0 0 72px rgba(57, 255, 20, 0.6);
+
+  /* Animaciones combinadas */
+  animation: 
+    breatheNeon 3s ease-in-out infinite,
+    flickerNeon 6s infinite,
+    energyShift 4s linear infinite;
 }
 
+/* Respiración más orgánica */
 @keyframes breatheNeon {
   0%, 100% {
-    opacity: 0.7;
     transform: scale(1);
-    text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14;
+    opacity: 0.85;
   }
   50% {
+    transform: scale(1.06);
     opacity: 1;
-    transform: scale(1.02);
-    text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14;
+  }
+}
+
+/* Micro-parpadeo tipo tubo neón real */
+@keyframes flickerNeon {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+  }
+  20%, 24%, 55% {
+    opacity: 0.6;
+  }
+}
+
+/* Movimiento interno de energía */
+@keyframes energyShift {
+  0% {
+    text-shadow:
+      0 0 5px #39ff14,
+      0 0 10px #39ff14,
+      0 0 20px #39ff14;
+  }
+  50% {
+    text-shadow:
+      0 0 10px #66ff33,
+      0 0 20px #39ff14,
+      0 0 40px #39ff14;
+  }
+  100% {
+    text-shadow:
+      0 0 5px #39ff14,
+      0 0 10px #39ff14,
+      0 0 20px #39ff14;
+  }
+}
+
+/* Aura externa brutal */
+.neon-export-title::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  background: radial-gradient(circle, rgba(57,255,20,0.25), transparent 70%);
+  filter: blur(10px);
+  z-index: -1;
+  opacity: 0.7;
+  animation: auraPulse 3s ease-in-out infinite;
+}
+
+@keyframes auraPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
   }
 }
 
@@ -338,8 +397,8 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="settings-section">
       
-      <div class="settings-section-title neon-export-title">
-  📤 EXPORTAR INFORME PROFESIONAL
+   <div class="settings-section-title neon-export-title">
+  📤 ¡EXPORTA TU INFORME PROFESIONAL!
 </div>
       
       <div style="display:flex;gap:7px;margin-bottom:7px">
