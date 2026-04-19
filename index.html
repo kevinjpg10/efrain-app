@@ -159,6 +159,42 @@ select.form-input option{background:var(--bg2)}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+.neon-breathe {
+  color: #39ff14;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+
+  text-shadow:
+    0 0 5px #39ff14,
+    0 0 10px #39ff14,
+    0 0 20px #39ff14,
+    0 0 40px #00ff66;
+
+  animation: neonBreath 2.5s ease-in-out infinite;
+}
+
+@keyframes neonBreath {
+  0%, 100% {
+    opacity: 0.75;
+    transform: scale(1);
+    text-shadow:
+      0 0 3px #39ff14,
+      0 0 8px #39ff14,
+      0 0 15px #00ff66;
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+    text-shadow:
+      0 0 10px #39ff14,
+      0 0 25px #39ff14,
+      0 0 50px #00ff66,
+      0 0 80px #00ff66;
+  }
+}
+  
 </style>
 </head>
 <body>
@@ -302,7 +338,9 @@ select.form-input option{background:var(--bg2)}
       </div>
     </div>
     <div class="settings-section">
-      <div class="settings-section-title">📤 Exporta tu informe Profesional</div>
+      <div class="settings-section-title neon-breathe">
+  📤 Exporta tu informe Profesional
+</div>
       <div style="display:flex;gap:7px;margin-bottom:7px">
         <button class="btn btn-green" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportExcel()">📊 Excel</button>
         <button class="btn btn-danger" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportPDF()">📄 PDF</button>
