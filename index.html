@@ -1145,27 +1145,6 @@ window.exportExcel = async function() {
     if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
     showToast('⏳ Preparando Excel...');
 
-    // 1. GESTIÓN DE LA URL (Variable única, sin errores de sintaxis)
-    let photoUrl = "";
-    try {
-        if (expenses.some(e => e.photo)) {
-            // Intentamos obtener la URL fresca
-            const freshUrl = await uploadAndGetPhotoUrl();
-            photoUrl = freshUrl || "";
-        }
-        
-        // Fallback: Si no hay URL fresca pero hay usuario, usamos la fija
-        if (!photoUrl && typeof currentUser !== 'undefined' && currentUser) {
-            photoUrl = storageUrl(currentUser.uid) + '&v=' + Date.now();
-        }
-    } catch (err) {
-        console.error("Error obteniendo photoUrl:", err);
-        // En caso de error crítico, intentamos al menos la URL básica
-        if (typeof currentUser !== 'undefined' && currentUser) {
-            photoUrl = storageUrl(currentUser.uid) + '&v=' + Date.now();
-        }
-    }
-
     const month = monthLabel();
     const wb = XLSX.utils.book_new();
     const groups = {};
@@ -1181,57 +1160,43 @@ window.exportExcel = async function() {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
         const amtCol = 'Importe (' + sym + ')';
-        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
-
         
+        // Mapeamos los datos limpios (sin fotos)
+        let rows = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0)).map(e => ({
+            'Fecha': e.date,
+            'Concepto': e.description,
+            'Categoría': e.category,
+            'Método': e.payment,
+            [amtCol]: e.amount
+        }));
 
-        // Añadir totales al final de la tabla
+        // Añadir totales al final
         const tot = exps.reduce((s, e) => s + e.amount, 0);
         const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
         const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
         
         rows.push({});
-        rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
-        rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
-        rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
+        rows.push({ 'Fecha': 'TOTAL', [amtCol]: tot });
+        rows.push({ 'Fecha': 'Tarjeta', [amtCol]: tar });
+        rows.push({ 'Fecha': 'Efectivo', [amtCol]: efe });
 
         const ws = XLSX.utils.json_to_sheet(rows);
 
-        // 3. INYECCIÓN DE HIPERVÍNCULOS (Clave para iPhone)
-        if (photoUrl) {
-            // Recorremos las filas de datos para insertar el link real
-            for (let i = 1; i <= sorted.length; i++) {
-                const cellRef = XLSX.utils.encode_cell({ r: i, c: 6 }); // Columna G
-                
-                ws[cellRef] = {
-                    t: 's',
-                    v: '📷 VER INFORME',
-                    l: { Target: photoUrl, Tooltip: 'Clic para ver fotos' },
-                    // Estilo: Azul + Subrayado (Obligatorio para que iOS lo detecte como link)
-                    s: { 
-                        font: { color: { rgb: "0563C1" }, underline: true },
-                        alignment: { horizontal: "center" } 
-                    }
-                };
-            }
-        }
-
-        // Ajustar anchos de columna (G es la 7ª -> índice 6)
-        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}, {wch:25}];
+        // Ajustar anchos (solo columnas de datos)
+        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}];
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
-    // 4. GENERACIÓN Y DESCARGA
+    // Generación y descarga
     try {
         const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
         XLSX.writeFile(wb, fileName);
         showToast('📊 Excel generado ✓');
     } catch (e) {
-        console.error("Error al descargar el archivo:", e);
+        console.error("Error al descargar:", e);
         showToast('❌ Error al guardar el archivo');
     }
 };
-
   
 // ── PDF (todos los usuarios pueden exportar) ──
 window.exportPDF=function(){
