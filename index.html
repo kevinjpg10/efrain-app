@@ -160,24 +160,30 @@ select.form-input option{background:var(--bg2)}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
  
-/* FORZAMOS EL EFECTO NEÓN */
 .neon-breathe {
-  color: #39ff14 !important;
-  text-transform: none !important; /* Quitamos el uppercase que estaba bloqueando */
-  font-weight: 700 !important;
-  text-shadow: 
-    0 0 5px #39ff14, 
-    0 0 10px #39ff14, 
-    0 0 20px #39ff14, 
-    0 0 40px #0f0 !important;
-  
-  animation: breatheNeon 2.5s ease-in-out infinite !important;
+  color: #39ff14;
+  font-weight: 700;
+  text-shadow:
+    0 0 5px #39ff14,
+    0 0 10px #39ff14,
+    0 0 20px #39ff14,
+    0 0 40px #0f0;
+
+  animation: breatheNeon 2.5s ease-in-out infinite;
 }
 
 @keyframes breatheNeon {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.03); }
+  0%, 100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
 }
+
+  
 <!-- LOADING -->
 <div class="loading-screen" id="loading-screen">
   <img id="loading-icon" src="icon.png" style="width:70px;height:70px;border-radius:20px;margin-bottom:18px" alt="logo">
