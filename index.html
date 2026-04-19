@@ -1183,16 +1183,7 @@ window.exportExcel = async function() {
         const amtCol = 'Importe (' + sym + ')';
         const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
 
-        // 2. CREACIÓN DE FILAS (Aseguramos que la columna G tenga texto)
-        const rows = sorted.map(e => ({
-            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-            Establecimiento: e.name || "",
-            Categoría: e.category || "",
-            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-            [amtCol]: e.amount,
-            Notas: e.notes || '',
-            'Ver Fotos': photoUrl ? '📷 VER INFORME' : 'Sin fotos'
-        }));
+        
 
         // Añadir totales al final de la tabla
         const tot = exps.reduce((s, e) => s + e.amount, 0);
