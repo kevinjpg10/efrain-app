@@ -1142,62 +1142,80 @@ window.showCharts=function(){
 
 
 // EXPORTACIÓN EXCEL - VERSION PROFESIONAL
-window.exportExcel = async function () {
-    if (!Array.isArray(expenses) || expenses.length === 0) {
-        showToast('No hay gastos para exportar');
-        return;
-    }
+// ── EXCEL (Versión Final Blindada para iPhone) ──
+window.exportExcel = async function() {
+    if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
+    showToast('⏳ Preparando Excel...');
 
-    showToast('⏳ Generando Excel...');
+    const month = monthLabel();
+    const wb = XLSX.utils.book_new();
+    const groups = {};
 
-    try {
-        const month = typeof monthLabel === 'function' ? monthLabel() : 'Mes';
-        const wb = XLSX.utils.book_new();
 
-        // 1. Agrupación interna (Reemplaza a la función faltante)
-        const grouped = {};
-        expenses.forEach(e => {
-            const cur = e.currency || 'EUR';
-            if (!grouped[cur]) grouped[cur] = [];
-            grouped[cur].push(e);
-        });
+    // 📊 HOJA RESUMEN PROFESIONAL (PRIMERA)
+    // ─────────────────────────────
+    const summary = createSummarySheet(groups);
+    const wsSummary = XLSX.utils.json_to_sheet(summary);
 
-        // 2. HOJA RESUMEN (Reemplaza a createSummarySheet)
-        const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-        const tar = expenses.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + (Number(e.amount) || 0), 0);
-        const efe = expenses.filter(e => e.payment === 'efectivo').reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    wsSummary["!cols"] = [
+        { wch: 25 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, wsSummary, "📊 RESUMEN");
+    
+    // Agrupar por moneda
+    expenses.forEach(e => { 
+        const cur = e.currency || 'EUR'; 
+        if (!groups[cur]) groups[cur] = []; 
+        groups[cur].push(e); 
+    });
+
+    Object.entries(groups).forEach(([code, exps]) => {
+        const c = CURRENCIES[code] || CURRENCIES.EUR;
+        const sym = c.symbol;
+        const amtCol = 'Importe (' + sym + ')';
+        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+
+        // 2. CREACIÓN DE FILAS
+        const rows = sorted.map(e => ({
+            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
+            Establecimiento: e.name || "",
+            Categoría: e.category || "",
+            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+            [amtCol]: e.amount,
+            Notas: e.notes || ''
+        }));
+
+        // Añadir totales al final de la tabla
+        const tot = exps.reduce((s, e) => s + e.amount, 0);
+        const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
+        const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
         
-        const summaryData = [
-            { Concepto: '📊 RESUMEN EJECUTIVO', Importe: '' },
-            { Concepto: 'TOTAL GENERAL', Importe: total },
-            { Concepto: 'Total Tarjeta', Importe: tar },
-            { Concepto: 'Total Efectivo', Importe: efe }
-        ];
-        const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-        wsSummary['!cols'] = [{wch: 25}, {wch: 20}];
-        XLSX.utils.book_append_sheet(wb, wsSummary, "📊 Resumen");
+        rows.push({});
+        rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
+        rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
+        rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
 
-        // 3. HOJAS DETALLADAS (Reemplaza a createCurrencySheet)
-        Object.entries(grouped).forEach(([currency, items]) => {
-            const rows = items.map(e => ({
-                Fecha: e.date || '',
-                Concepto: e.name || '',
-                Categoría: e.category || '',
-                Método: e.payment || '',
-                Importe: e.amount || 0
-            }));
-            const ws = XLSX.utils.json_to_sheet(rows);
-            XLSX.utils.book_append_sheet(wb, ws, currency.substring(0, 31));
-        });
+        const ws = XLSX.utils.json_to_sheet(rows);
 
-        // 4. Descarga
-        const fileName = `Informe_Gastos_${(month || 'mes').replace(/\s+/g, '_')}.xlsx`;
+        // 3. AJUSTE DE COLUMNAS (6 columnas totales)
+        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}];
+        XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
+    });
+
+    // 4. GENERACIÓN Y DESCARGA
+    try {
+        const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
         XLSX.writeFile(wb, fileName);
-        showToast('✅ Excel generado correctamente');
-
-    } catch (err) {
-        console.error("Error en exportExcel:", err);
-        showToast('❌ Error al generar el archivo');
+        showToast('📊 Excel generado ✓');
+    } catch (e) {
+        console.error("Error al descargar el archivo:", e);
+        showToast('❌ Error al guardar el archivo');
     }
 };
   
