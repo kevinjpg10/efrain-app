@@ -160,112 +160,43 @@ select.form-input option{background:var(--bg2)}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.hud-wrapper {
-  display: inline-block;
-  padding: 14px 22px;
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.35);
-  position: relative;
-  overflow: hidden;
-}
-
-/* 🔥 TEXTO PRINCIPAL */
-.hud-title {
+.neon-breathe {
   color: #39ff14;
   font-weight: 800;
-  letter-spacing: 0.5px;
-  position: relative;
-  z-index: 2;
+  letter-spacing: 0.3px;
 
+  /* Glow neón */
   text-shadow:
-    0 0 6px #39ff14,
-    0 0 14px #00ff66,
-    0 0 30px rgba(57, 255, 20, 0.6);
+    0 0 5px #39ff14,
+    0 0 10px #39ff14,
+    0 0 20px #39ff14,
+    0 0 40px #00ff66,
+    0 0 80px #00ff66;
 
-  animation: breathe 2.8s ease-in-out infinite;
+  /* respiración */
+  animation: neonBreathing 2.6s ease-in-out infinite;
 }
 
-/* 🌬️ respiración */
-@keyframes breathe {
+/* animación respiración */
+@keyframes neonBreathing {
   0%, 100% {
     transform: scale(1);
-    opacity: 0.85;
+    opacity: 0.75;
+    text-shadow:
+      0 0 3px #39ff14,
+      0 0 8px #39ff14,
+      0 0 15px #00ff66;
   }
+
   50% {
     transform: scale(1.03);
     opacity: 1;
+    text-shadow:
+      0 0 10px #39ff14,
+      0 0 25px #39ff14,
+      0 0 60px #00ff66,
+      0 0 100px #00ff66;
   }
-}
-
-/* ⚡ SCAN LINE (láser) */
-.hud-wrapper::before {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: 0;
-  width: 100%;
-  height: 200%;
-
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(57, 255, 20, 0.15) 45%,
-    rgba(57, 255, 20, 0.5) 50%,
-    rgba(57, 255, 20, 0.15) 55%,
-    transparent 100%
-  );
-
-  animation: scan 3s linear infinite;
-  z-index: 1;
-  pointer-events: none;
-}
-
-@keyframes scan {
-  0% {
-    transform: translateY(-100%);
-  }
-  100% {
-    transform: translateY(100%);
-  }
-}
-
-/* 🧿 GLITCH SUAVE */
-.hud-title::after {
-  content: "📤 Exporta tu informe Profesional";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: #39ff14;
-  opacity: 0.25;
-
-  animation: glitch 2s infinite;
-}
-
-@keyframes glitch {
-  0%, 100% {
-    transform: translate(0);
-    opacity: 0.15;
-  }
-  20% {
-    transform: translate(-1px, 1px);
-  }
-  40% {
-    transform: translate(1px, -1px);
-  }
-  60% {
-    transform: translate(-1px, -1px);
-  }
-  80% {
-    transform: translate(1px, 1px);
-  }
-}
-
-/* 🌟 borde HUD */
-.hud-wrapper {
-  box-shadow:
-    0 0 12px rgba(57, 255, 20, 0.25),
-    inset 0 0 10px rgba(57, 255, 20, 0.15);
-  border: 1px solid rgba(57, 255, 20, 0.25);
 }
   </style>
 
@@ -410,8 +341,9 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="settings-section">
 <div class="hud-wrapper">
-  <div class="hud-title">
-    📤 Exporta tu informe Profesional
+  <div class="settings-section-title neon-breathe">
+  📤 Exporta tu informe Profesional
+
   </div>
 
 
