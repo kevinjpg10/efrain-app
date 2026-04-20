@@ -1209,50 +1209,52 @@ window.showCharts=function(){
   showScreen('screen-dashboard');
 };
 
-// ── EXCEL (Versión Final Blindada para iPhone) ──
+// ── EXCEL (Versión Final Blindada para iPhone + sin 404) ──
 window.exportExcel = async function() {
-    if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
+    if (!expenses.length) {
+        showToast('No hay gastos para exportar');
+        return;
+    }
+
     showToast('⏳ Preparando Excel...');
 
-    // 1. GESTIÓN DE LA URL (Variable única, sin errores de sintaxis)
     let photoUrl = "";
+
     try {
-        if (expenses.some(e => e.photo)) {
-            // Intentamos obtener la URL fresca
-            const freshUrl = await uploadAndGetPhotoUrl();
-            photoUrl = freshUrl || "";
-        }
-        
-        // Fallback: Si no hay URL fresca pero hay usuario, usamos la fija
-        if (!photoUrl && typeof currentUser !== 'undefined' && currentUser) {
+        const hasPhotos = expenses.some(e => e.photo);
+
+        if (hasPhotos && typeof currentUser !== 'undefined' && currentUser) {
+            // 1) Forzar creación/subida real del informe HTML
+            await uploadPhotoReport();
+
+            // 2) Espera mínima para asegurar propagación
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // 3) Usar la ruta real ya subida
             photoUrl = storageUrl(currentUser.uid) + '&v=' + Date.now();
         }
     } catch (err) {
-        console.error("Error obteniendo photoUrl:", err);
-        // En caso de error crítico, intentamos al menos la URL básica
-        if (typeof currentUser !== 'undefined' && currentUser) {
-            photoUrl = storageUrl(currentUser.uid) + '&v=' + Date.now();
-        }
+        console.error("Error preparando informe de fotos:", err);
+        photoUrl = "";
     }
 
     const month = monthLabel();
     const wb = XLSX.utils.book_new();
     const groups = {};
-    
+
     // Agrupar por moneda
-    expenses.forEach(e => { 
-        const cur = e.currency || 'EUR'; 
-        if (!groups[cur]) groups[cur] = []; 
-        groups[cur].push(e); 
+    expenses.forEach(e => {
+        const cur = e.currency || 'EUR';
+        if (!groups[cur]) groups[cur] = [];
+        groups[cur].push(e);
     });
 
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
         const amtCol = 'Importe (' + sym + ')';
-        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+        const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
-        // 2. CREACIÓN DE FILAS (Aseguramos que la columna G tenga texto)
         const rows = sorted.map(e => ({
             Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
             Establecimiento: e.name || "",
@@ -1263,11 +1265,10 @@ window.exportExcel = async function() {
             'Ver Fotos': photoUrl ? '📷 VER INFORME' : 'Sin fotos'
         }));
 
-        // Añadir totales al final de la tabla
         const tot = exps.reduce((s, e) => s + e.amount, 0);
         const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
         const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
-        
+
         rows.push({});
         rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
         rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
@@ -1275,31 +1276,36 @@ window.exportExcel = async function() {
 
         const ws = XLSX.utils.json_to_sheet(rows);
 
-        // 3. INYECCIÓN DE HIPERVÍNCULOS (Clave para iPhone)
+        // Hipervínculos reales en columna G
         if (photoUrl) {
-            // Recorremos las filas de datos para insertar el link real
             for (let i = 1; i <= sorted.length; i++) {
-                const cellRef = XLSX.utils.encode_cell({ r: i, c: 6 }); // Columna G
-                
+                const cellRef = XLSX.utils.encode_cell({ r: i, c: 6 });
+
                 ws[cellRef] = {
                     t: 's',
                     v: '📷 VER INFORME',
                     l: { Target: photoUrl, Tooltip: 'Clic para ver fotos' },
-                    // Estilo: Azul + Subrayado (Obligatorio para que iOS lo detecte como link)
-                    s: { 
+                    s: {
                         font: { color: { rgb: "0563C1" }, underline: true },
-                        alignment: { horizontal: "center" } 
+                        alignment: { horizontal: "center" }
                     }
                 };
             }
         }
 
-        // Ajustar anchos de columna (G es la 7ª -> índice 6)
-        ws['!cols'] = [{wch:12}, {wch:25}, {wch:15}, {wch:15}, {wch:12}, {wch:20}, {wch:25}];
+        ws['!cols'] = [
+            { wch: 12 },
+            { wch: 25 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 12 },
+            { wch: 20 },
+            { wch: 25 }
+        ];
+
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
-    // 4. GENERACIÓN Y DESCARGA
     try {
         const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
         XLSX.writeFile(wb, fileName);
