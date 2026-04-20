@@ -610,14 +610,32 @@ window.viewPhotoReport=function(){
   window.open(storageUrl(currentUser.uid)+'&v='+Date.now(),'_blank');
 };
 
-window.downloadPhotoReport=async function(){
-  if(!expenses.length){showToast('No hay gastos este mes');return;}
-  const fileName='Fotos_tickets_'+monthLabel().replace(/\s+/g,'_')+'.html';
-  const b=new Blob([buildPhotoReportHTML()],{type:'text/html;charset=utf-8'});
-  await deliverGeneratedFile(fileName,b,{openInBrowser:true});
-  showToast('📷 Informe listo');
+window.downloadPhotoReport = function(){
+  if(!expenses.length){
+    showToast('No hay gastos este mes');
+    return;
+  }
+
+  const fileName = 'Fotos_tickets_' + monthLabel().replace(/\s+/g,'_') + '.html';
+  const blob = new Blob([buildPhotoReportHTML()], { type:'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 4000);
+
+  showToast('📷 Informe descargado');
 };
 
+  
 // ── HELPERS ──
 function showToast(m){
   const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
