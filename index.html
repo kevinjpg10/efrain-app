@@ -602,17 +602,13 @@ window.downloadPhotoReport = function(){
     return;
   }
 
-  const html = buildPhotoReportHTML();
-  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+  const fileName = 'Fotos_tickets_' + monthLabel().replace(/\s+/g,'_') + '.html';
+  const blob = new Blob([buildPhotoReportHTML()], { type:'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
 
-  // 🔥 1. ABRIR EN NAVEGADOR (esto es lo importante)
-  window.open(url, '_blank');
-
-  // 🔽 2. DESCARGAR (opcional)
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'Fotos_tickets_' + monthLabel().replace(/\s+/g,'_') + '.html';
+  a.download = fileName;
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
@@ -620,9 +616,9 @@ window.downloadPhotoReport = function(){
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, 5000);
+  }, 4000);
 
-  showToast('📷 Informe abierto');
+  showToast('📷 Informe descargado');
 };
   
 // ── HELPERS ──
