@@ -596,33 +596,23 @@ function buildPhotoReportHTML(){
     +'<div class="g">'+cards+'</div></body></html>';
 }
 
-async function uploadPhotoReport(){
-  if(!currentUser)return;
-  try{
-    const html=buildPhotoReportHTML();
-    await uploadString(ref(storage,'usuarios/'+currentUser.uid+'/Fotos_tickets.html'),html,'raw',{contentType:'text/html;charset=utf-8'});
-    console.log('✅ Report uploaded, expenses:',expenses.length);
-  }catch(e){console.error('Storage upload:',e.code,e.message);}
-}
-
-window.viewPhotoReport=function(){
-  if(!currentUser){showToast('Inicia sesión primero');return;}
-  window.open(storageUrl(currentUser.uid)+'&v='+Date.now(),'_blank');
-};
-
 window.downloadPhotoReport = function(){
   if(!expenses.length){
     showToast('No hay gastos este mes');
     return;
   }
 
-  const fileName = 'Fotos_tickets_' + monthLabel().replace(/\s+/g,'_') + '.html';
-  const blob = new Blob([buildPhotoReportHTML()], { type:'text/html;charset=utf-8' });
+  const html = buildPhotoReportHTML();
+  const blob = new Blob([html], { type:'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
 
+  // 🔥 1. ABRIR EN NAVEGADOR (esto es lo importante)
+  window.open(url, '_blank');
+
+  // 🔽 2. DESCARGAR (opcional)
   const a = document.createElement('a');
   a.href = url;
-  a.download = fileName;
+  a.download = 'Fotos_tickets_' + monthLabel().replace(/\s+/g,'_') + '.html';
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
@@ -630,11 +620,10 @@ window.downloadPhotoReport = function(){
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, 4000);
+  }, 5000);
 
-  showToast('📷 Informe descargado');
+  showToast('📷 Informe abierto');
 };
-
   
 // ── HELPERS ──
 function showToast(m){
