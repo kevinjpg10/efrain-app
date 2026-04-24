@@ -161,62 +161,64 @@ select.form-input option{background:var(--bg2)}
 
 /* Título neón de informes */
 .neon-title{
-  font-size:16px;
-  font-weight:900;
+  font-size:13px;
+  font-weight:800;
   text-align:center;
-  margin:12px 0 14px;
-  padding:10px 12px;
+  margin:10px 0 8px;
   text-transform:uppercase;
-  letter-spacing:.9px;
-  line-height:1.35;
-  color:#d8b4fe;
+  letter-spacing:.6px;
+  line-height:1.3;
+
+  /* COLOR GRIS EXACTO */
+  color:#6b7280; /* gris elegante tipo UI */
+
+  /* brillo muy sutil (casi imperceptible) */
   text-shadow:
-    0 0 4px #a855f7,
-    0 0 10px #a855f7,
-    0 0 18px #9333ea,
-    0 0 30px rgba(147,51,234,.9);
-  animation:neonBreathing 2.6s ease-in-out infinite;
+    0 0 2px rgba(107,114,128,.25);
+
+  /* respiración muy suave */
+  animation:breathingSoft 2.5s ease-in-out infinite;
 }
-@keyframes neonBreathing{
+
+@keyframes breathingSoft{
   0%,100%{
-    opacity:.82;
+    opacity:.65;
     transform:scale(1);
-    filter:drop-shadow(0 0 4px rgba(168,85,247,.55));
   }
   50%{
-    opacity:1;
-    transform:scale(1.035);
-    filter:drop-shadow(0 0 14px rgba(168,85,247,.95));
+    opacity:.9;
+    transform:scale(1.015);
   }
 }
 /* Título neón debajo de Todos */
-.camera-neon-title{
-  font-size:15px;
-  font-weight:900;
+.neon-title{
+  font-size:13px;
+  font-weight:800;
   text-align:center;
-  margin:0 16px 12px;
-  padding:7px 10px;
+  margin:10px 0 8px;
   text-transform:uppercase;
-  letter-spacing:.75px;
-  line-height:1.28;
-  color:#4f8ef7;
+  letter-spacing:.6px;
+  line-height:1.3;
+
+  /* COLOR GRIS EXACTO */
+  color:#6b7280; /* gris elegante tipo UI */
+
+  /* brillo muy sutil (casi imperceptible) */
   text-shadow:
-    0 0 4px #4f8ef7,
-    0 0 10px #4f8ef7,
-    0 0 18px #3d6fd4,
-    0 0 30px rgba(79,142,247,.9);
-  animation:cameraNeonBreathing 2.5s ease-in-out infinite;
+    0 0 2px rgba(107,114,128,.25);
+
+  /* respiración muy suave */
+  animation:breathingSoft 2.5s ease-in-out infinite;
 }
-@keyframes cameraNeonBreathing{
+
+@keyframes breathingSoft{
   0%,100%{
-    opacity:.82;
+    opacity:.65;
     transform:scale(1);
-    filter:drop-shadow(0 0 4px rgba(79,142,247,.55));
   }
   50%{
-    opacity:1;
-    transform:scale(1.035);
-    filter:drop-shadow(0 0 14px rgba(79,142,247,.95));
+    opacity:.9;
+    transform:scale(1.015);
   }
 }
 
