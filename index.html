@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Genera tu informe de gastos de manera profesional</title>
-<meta name="description" content="Gestiona tus informes de forma inteligente con IA.">
+<title>Mis Gastos Pro</title>
+<meta name="description" content="Gestiona tus gastos de forma inteligente con IA.">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="format-detection" content="telephone=no">
 <meta name="mobile-web-app-capable" content="yes">
@@ -158,6 +158,31 @@ select.form-input option{background:var(--bg2)}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* === TITULO NEON SOBRE ACCIONES RAPIDAS === */
+.pro-neon-title{
+  margin:12px 16px 10px;
+  text-align:center;
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:#c084fc;
+  text-shadow:
+    0 0 6px rgba(168,85,247,.5),
+    0 0 14px rgba(147,51,234,.4),
+    0 0 28px rgba(79,142,247,.2);
+  animation:neonBreath 2.5s ease-in-out infinite;
+}
+@keyframes neonBreath{
+  0%{opacity:.6;transform:scale(.98);text-shadow:0 0 4px rgba(168,85,247,.2);}
+  50%{opacity:1;transform:scale(1);
+      text-shadow:0 0 10px rgba(192,132,252,.9),
+                  0 0 22px rgba(168,85,247,.7),
+                  0 0 38px rgba(79,142,247,.3);}
+  100%{opacity:.6;transform:scale(.98);text-shadow:0 0 4px rgba(168,85,247,.2);}
+}
+
 </style>
 </head>
 <body>
@@ -173,7 +198,7 @@ select.form-input option{background:var(--bg2)}
 <div class="screen" id="screen-auth">
   <div class="auth-wrap">
    <img id="auth-icon" src="icon.png" style="width:78px;height:78px;border-radius:23px;object-fit:cover;margin-bottom:17px;box-shadow:0 8px 28px rgba(79,142,247,.4)" alt="logo">
-    <div class="auth-title" id="auth-app-title">Genera tu informe de gastos de manera profesional</div>
+    <div class="auth-title" id="auth-app-title">Mis Gastos Pro</div>
     <div class="auth-sub">Gestiona tus gastos de forma inteligente</div>
     <div class="auth-card">
       <div class="auth-tabs">
@@ -207,7 +232,7 @@ select.form-input option{background:var(--bg2)}
     <div class="header-brand">
      <img id="main-icon" class="header-icon" src="icon.png" alt="Logo">
       <div style="min-width:0">
-        <div class="header-title" id="app-name-display">Genera tu informe de gastos de manera profesional</div>
+        <div class="header-title" id="app-name-display">Mis Gastos Pro</div>
         <div class="header-sub" id="user-email-display"></div>
       </div>
     </div>
@@ -225,6 +250,7 @@ select.form-input option{background:var(--bg2)}
     <span style="font-size:11px;color:var(--text2)" id="main-count"></span>
   </div>
   <div class="stats" id="stats-area"></div>
+<div id="quick-actions-main"></div>
   <div class="tabs">
     <button class="tab active" onclick="setFilter('all',this);currentCurrencyFilter=null">✦ Todos</button>
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
@@ -934,6 +960,7 @@ function render(){
   document.getElementById('month-badge').textContent=monthLabel();
   const db2=document.getElementById('date-badge');if(db2)db2.textContent=fullDateLabel();
   document.getElementById('main-count').textContent=expenses.length+' gastos';
+  document.getElementById('quick-actions-main').innerHTML = buildQuickActionsHTML();
   renderStats();renderList();
 }
 
