@@ -158,66 +158,6 @@ select.form-input option{background:var(--bg2)}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* === TITULO NEON INFORMES + DESLIZADOR === */
-.pro-neon-title{
-  margin:0 0 14px;
-  text-align:center;
-  font-size:13px;
-  font-weight:900;
-  letter-spacing:.07em;
-  text-transform:uppercase;
-  color:#c084fc;
-  line-height:1.35;
-  text-shadow:
-    0 0 8px rgba(168,85,247,.55),
-    0 0 18px rgba(147,51,234,.35),
-    0 0 30px rgba(79,142,247,.15);
-  animation:proBreathingNeon 2.5s ease-in-out infinite;
-}
-.pro-neon-title.manual{
-  margin:8px 16px 12px;
-  font-size:12px;
-  letter-spacing:.045em;
-  text-transform:none;
-  flex-shrink:0;
-}
-@keyframes proBreathingNeon{
-  0%{opacity:.68;transform:scale(.985);text-shadow:0 0 4px rgba(168,85,247,.25),0 0 10px rgba(147,51,234,.18)}
-  50%{opacity:1;transform:scale(1);text-shadow:0 0 10px rgba(192,132,252,.85),0 0 22px rgba(168,85,247,.65),0 0 38px rgba(79,142,247,.22)}
-  100%{opacity:.68;transform:scale(.985);text-shadow:0 0 4px rgba(168,85,247,.25),0 0 10px rgba(147,51,234,.18)}
-}
-.swipe-hint{
-  margin:0 16px 10px;
-  text-align:center;
-  font-size:10px;
-  color:rgba(255,255,255,.38);
-  letter-spacing:.03em;
-  flex-shrink:0;
-}
-.screen{
-  transition:transform .22s ease, opacity .22s ease;
-}
-.quick-card.share{
-  border-color:rgba(255,0,0,.28);
-}
-.quick-card img{
-  width:56px;
-  height:56px;
-  border-radius:14px;
-  object-fit:contain;
-  object-position:center;
-  flex-shrink:0;
-  display:block;
-}
-.quick-card.fotos img{
-  object-fit:contain;
-  object-position:center;
-  background:none;
-  border-radius:0;
-  padding:4px;
-}
-
 </style>
 </head>
 <body>
@@ -285,14 +225,11 @@ select.form-input option{background:var(--bg2)}
     <span style="font-size:11px;color:var(--text2)" id="main-count"></span>
   </div>
   <div class="stats" id="stats-area"></div>
-  <div id="quick-actions-main"></div>
   <div class="tabs">
     <button class="tab active" onclick="setFilter('all',this);currentCurrencyFilter=null">✦ Todos</button>
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
     <button class="tab" onclick="setFilterCard('efectivo')">💵 Efectivo</button>
   </div>
-  <div class="pro-neon-title manual">Abre la Cámara y agrega un gasto o hazlo de forma manual</div>
-  <div class="swipe-hint">Desliza a la izquierda o derecha para cambiar de pantalla</div>
   <div class="list" id="expense-list"></div>
   <button class="fab" id="fab-btn" onclick="showAddSheet()">＋</button>
 </div>
@@ -735,17 +672,6 @@ function openWhatsAppPremium(){
 }
 window.openWhatsAppPremium=openWhatsAppPremium;
 
-function buildQuickActionsHTML(){
-  return '<div class="quick-panel" style="margin-top:0;margin-bottom:12px">'
-    +'<div class="pro-neon-title">COMPARTE TUS INFORMES DE MANERA PROFESIONAL</div>'
-    +'<div class="quick-grid" style="margin-top:0">'
-    +'<div class="quick-card excel" onclick="exportExcel()"><img src="./excel.png" alt="Excel"><div class="quick-card-text"><div class="quick-card-title">Excel</div><div class="quick-card-desc">Exporta tu informe</div></div></div>'
-    +'<div class="quick-card pdf" onclick="exportPDF()"><img src="./pdf.png" alt="PDF"><div class="quick-card-text"><div class="quick-card-title">PDF</div><div class="quick-card-desc">Genera los datos de tu informe</div></div></div>'
-    +'<div class="quick-card fotos" onclick="viewPhotoReport()"><img src="./camara.png" alt="Fotos"><div class="quick-card-text"><div class="quick-card-title">Fotos</div><div class="quick-card-desc">Tus tickets en galería</div></div></div>'
-    +'<div class="quick-card share" onclick="shareMonthlyReport()"><img src="./compartir.png" alt="Compartir"><div class="quick-card-text"><div class="quick-card-title">Compartir</div><div class="quick-card-desc">Envía a tu gestor</div></div></div>'
-    +'</div></div>';
-}
-
 // ── APP NAME ──
 function updateAppName(val){
   const name=val.trim()||'Mis Gastos Pro';
@@ -1008,8 +934,6 @@ function render(){
   document.getElementById('month-badge').textContent=monthLabel();
   const db2=document.getElementById('date-badge');if(db2)db2.textContent=fullDateLabel();
   document.getElementById('main-count').textContent=expenses.length+' gastos';
-  const qam=document.getElementById('quick-actions-main');
-  if(qam)qam.innerHTML=buildQuickActionsHTML();
   renderStats();renderList();
 }
 
@@ -1541,95 +1465,6 @@ window.adminTogglePremium=async function(){
     if(currentUser&&currentUser.uid===u.uid)await loadUserProfile();
   }catch(e){showToast('❌ '+e.message);}
 };
-
-// ── DESLIZADOR ENTRE PANTALLAS CON EL DEDO ──
-(function enableSwipeScreens(){
-  let startX=0, startY=0, startTime=0;
-  const minDistance=65;
-  const maxVertical=55;
-  const maxTime=700;
-
-  function activeScreen(){
-    return document.querySelector('.screen.active');
-  }
-
-  function isBlockedTarget(el){
-    return !!(el && el.closest('input,textarea,select,button,a,.overlay.open,.sheet,.quick-card,.expense-item,.tab,.stat-card'));
-  }
-
-  function goNext(){
-    const s=activeScreen();
-    if(!s)return false;
-    const id=s.id;
-
-    if(id==='screen-main'){
-      if(typeof showCharts==='function'){ showCharts(); }
-      else { showScreen('screen-dashboard'); }
-      return true;
-    }
-    if(id==='screen-dashboard'){
-      showScreen('screen-settings');
-      return true;
-    }
-    if(id==='screen-settings'){
-      showScreen('screen-main');
-      return true;
-    }
-    return false;
-  }
-
-  function goPrev(){
-    const s=activeScreen();
-    if(!s)return false;
-    const id=s.id;
-
-    if(id==='screen-main'){
-      showScreen('screen-settings');
-      return true;
-    }
-    if(id==='screen-settings'){
-      if(typeof showCharts==='function'){ showCharts(); }
-      else { showScreen('screen-dashboard'); }
-      return true;
-    }
-    if(id==='screen-dashboard'){
-      showScreen('screen-main');
-      return true;
-    }
-    if(id==='screen-detail' || id==='screen-admin' || id==='screen-admin-user'){
-      showScreen('screen-main');
-      return true;
-    }
-    return false;
-  }
-
-  document.addEventListener('touchstart',function(e){
-    if(!e.touches || e.touches.length!==1 || isBlockedTarget(e.target))return;
-    startX=e.touches[0].clientX;
-    startY=e.touches[0].clientY;
-    startTime=Date.now();
-  },{passive:true});
-
-  document.addEventListener('touchend',function(e){
-    if(!startTime || !e.changedTouches || e.changedTouches.length!==1)return;
-
-    const dx=e.changedTouches[0].clientX-startX;
-    const dy=e.changedTouches[0].clientY-startY;
-    const dt=Date.now()-startTime;
-    startTime=0;
-
-    if(dt>maxTime)return;
-    if(Math.abs(dx)<minDistance)return;
-    if(Math.abs(dy)>maxVertical)return;
-
-    if(dx<0){
-      if(goNext()) showToast('➡️ Cambiando de pantalla');
-    }else{
-      if(goPrev()) showToast('⬅️ Cambiando de pantalla');
-    }
-  },{passive:true});
-})();
-
 </script>
 </body>
 </html>
