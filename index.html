@@ -159,136 +159,6 @@ select.form-input option{background:var(--bg2)}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* === HERO LOGIN + PANEL RÁPIDO INTEGRADO === */
-.auth-hero-title{
-  margin-top:18px;font-size:13px;font-weight:800;letter-spacing:.06em;
-  color:#b8b5ff;text-transform:uppercase;text-align:center;
-  animation:breathing 2.5s ease-in-out infinite
-}
-.auth-hero-sub{
-  margin-top:6px;margin-bottom:18px;font-size:12px;color:rgba(255,255,255,.62);text-align:center
-}
-@keyframes breathing{
-  0%{opacity:.74;text-shadow:0 0 0 rgba(155,92,255,0)}
-  50%{opacity:1;text-shadow:0 0 12px rgba(155,92,255,.35)}
-  100%{opacity:.74;text-shadow:0 0 0 rgba(155,92,255,0)}
-}
-.quick-panel{
-  margin:0 16px 12px;
-  padding:16px;
-  border-radius:20px;
-  background:linear-gradient(180deg,#0c1022,#080b18);
-  border:1px solid rgba(255,255,255,.05);
-  box-shadow:0 10px 30px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.03);
-  flex-shrink:0;
-}
-.quick-panel-title{
-  font-size:13px;font-weight:800;color:#b8b5ff;letter-spacing:.04em
-}
-.quick-panel-sub{
-  font-size:12px;color:rgba(255,255,255,.6);margin-top:4px
-}
-.quick-grid{
-  display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px
-}
-.quick-card{
-  display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;
-  background:#0f1425;border:1px solid rgba(255,255,255,.05);cursor:pointer;
-  transition:transform .18s ease, box-shadow .18s ease;
-  box-shadow:0 8px 25px rgba(0,0,0,.22);
-  min-height:88px;
-}
-.quick-card:active{transform:scale(.97)}
-.quick-card.excel{border-color:rgba(0,255,100,.28)}
-.quick-card.pdf{border-color:rgba(255,0,0,.28)}
-.quick-card.fotos{border-color:rgba(0,120,255,.28)}
-.quick-card.share{border-color:rgba(150,80,255,.28)}
-.quick-card img{
-  width:50px;height:50px;border-radius:12px;object-fit:contain;object-position:center;flex-shrink:0;display:block
-}
-.quick-card.fotos img{
-  margin:auto;object-fit:contain;object-position:center
-}
-.quick-card-text{min-width:0}
-.quick-card-title{font-size:14px;font-weight:700;color:#fff}
-.quick-card-desc{font-size:11px;color:rgba(255,255,255,.62);line-height:1.3;margin-top:2px}
-.premium-price-box{
-  background:rgba(245,158,11,.08);
-  border:1px solid rgba(245,158,11,.22);
-  border-radius:12px;
-  padding:12px;
-  margin:14px 0 16px;
-  text-align:left
-}
-.premium-price-main{
-  font-size:24px;font-weight:900;line-height:1;color:#fff
-}
-.premium-price-main span{
-  font-size:13px;font-weight:700;color:#ffd992
-}
-.premium-price-year{
-  margin-top:6px;font-size:12px;color:#ffd992
-}
-.premium-price-year strong{color:#fff}
-@media (max-width:380px){
-  .quick-grid{grid-template-columns:1fr}
-}
-
-
-/* === FIX SCROLL GLOBAL / MÓVIL ===
-   El bloqueo venía de usar pantallas con height:100vh y scroll interno fijo.
-   Estas reglas permiten que la página completa vuelva a desplazarse correctamente,
-   especialmente cuando el panel rápido + cabecera superan la altura del móvil. */
-html{
-  width:100%;
-  min-height:100%;
-  height:auto;
-  overflow-x:hidden;
-  overflow-y:auto;
-}
-body{
-  width:100%;
-  min-height:100dvh;
-  height:auto;
-  overflow-x:hidden;
-  overflow-y:auto;
-  touch-action:pan-y;
-}
-.screen{
-  height:auto;
-  min-height:100dvh;
-  max-height:none;
-  overflow-y:auto;
-}
-.screen.active{display:flex}
-#screen-main.screen.active{
-  height:auto;
-  min-height:100dvh;
-  overflow-y:auto;
-}
-#screen-main .header,
-#screen-main .month-strip,
-#screen-main .stats,
-#screen-main .tabs,
-#screen-main .quick-panel{
-  flex-shrink:0;
-}
-#screen-main .list{
-  flex:none;
-  min-height:160px;
-  overflow:visible;
-  padding-bottom:calc(110px + env(safe-area-inset-bottom));
-}
-@supports (height:100svh){
-  body{min-height:100svh}
-  .screen{min-height:100svh}
-  #screen-main.screen.active{min-height:100svh}
-}
-@media (max-height:700px){
-  .auth-wrap{justify-content:flex-start}
-}
-
-
 .pro-neon-title{
   margin:10px 16px 8px;
   text-align:center;
@@ -331,8 +201,6 @@ body{
    <img id="auth-icon" src="icon.png" style="width:78px;height:78px;border-radius:23px;object-fit:cover;margin-bottom:17px;box-shadow:0 8px 28px rgba(79,142,247,.4)" alt="logo">
     <div class="auth-title" id="auth-app-title">Mis Gastos Pro</div>
     <div class="auth-sub">Gestiona tus gastos de forma inteligente</div>
-    <div class="auth-hero-title">ENVÍA TU INFORME DE GASTOS PROFESIONAL</div>
-    <div class="auth-hero-sub">Organiza, exporta y comparte en segundos</div>
     <div class="auth-card">
       <div class="auth-tabs">
         <div class="auth-tab active" onclick="switchAuthTab('login')">Iniciar sesión</div>
@@ -383,12 +251,13 @@ body{
     <span style="font-size:11px;color:var(--text2)" id="main-count"></span>
   </div>
   <div class="stats" id="stats-area"></div>
+
+<div class="pro-neon-title">COMPARTE TUS INFORMES DE MANERA PROFESIONAL</div>
   <div class="tabs">
     <button class="tab active" onclick="setFilter('all',this);currentCurrencyFilter=null">✦ Todos</button>
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
     <button class="tab" onclick="setFilterCard('efectivo')">💵 Efectivo</button>
   </div>
-  
   <div class="list" id="expense-list"></div>
   <button class="fab" id="fab-btn" onclick="showAddSheet()">＋</button>
 </div>
@@ -462,8 +331,7 @@ body{
     <div class="settings-section">
       <div class="settings-section-title">📤 Exportar</div>
       <div style="display:flex;gap:7px;margin-bottom:7px">
-        <div class="pro-neon-title">COMPARTE TUS INFORMES DE MANERA PROFESIONAL</div>
-<button class="btn btn-green" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportExcel()">📊 Excel</button>
+        <button class="btn btn-green" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportExcel()">📊 Excel</button>
         <button class="btn btn-danger" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportPDF()">📄 PDF</button>
       </div>
       <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:11px;border:1px solid rgba(79,142,247,.2)">
@@ -554,7 +422,7 @@ body{
       <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="f-date" type="date"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Categoría</label><select class="form-input" id="f-category"><option value="Desayuno">🥐 Desayuno</option><option value="Comida">🍔 Comida</option><option value="Cena">🍽️ Cena</option><option value="Gasolina">⛽ Gasolina</option><option value="Parking">🅿️ Parking</option><option value="Peajes">🛣️ Peajes</option><option value="Taxi/Uber">🚕 Taxi / Uber</option><option value="AVE/Tren">🚄 AVE / Tren</option><option value="Bus/Metro">🚌 Bus / Metro</option><option value="Avión">✈️ Avión</option><option value="Hotel">🏨 Hotel</option><option value="Herramientas">🛠️ Herramientas</option><option value="Mecánico">🔧 Mecánico</option><option value="Material">📦 Material</option><option value="Salud">💊 Salud</option><option value="Ocio">🎮 Ocio</option><option value="Ropa">👕 Ropa</option><option value="Varios">🛍️ Varios</option></select></div>
+      <div class="form-group"><label class="form-label">Categoría</label><select class="form-input" id="f-category"><option value="Comida">🍔 Comida</option><option value="Gasolina">⛽ Gasolina</option><option value="Transporte">🚗 Transporte</option><option value="Parking">🅿️ Parking</option><option value="Material">📦 Material</option><option value="Varios">🛍️ Varios</option><option value="Salud">💊 Salud</option><option value="Ocio">🎮 Ocio</option><option value="Ropa">👕 Ropa</option></select></div>
       <div class="form-group"><label class="form-label">Método pago</label><select class="form-input" id="f-payment"><option value="tarjeta">💳 Tarjeta</option><option value="efectivo">💵 Efectivo</option></select></div>
     </div>
     <div class="form-group"><label class="form-label">Notas</label><input class="form-input" id="f-notes" placeholder="Opcional..." type="text"></div>
@@ -622,7 +490,7 @@ body{
     <div style="text-align:center;padding:8px 0 14px">
       <div style="font-size:42px;margin-bottom:11px">⭐</div>
       <div style="font-size:19px;font-weight:800;margin-bottom:7px">Hazte Premium</div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5">Has alcanzado el límite de la versión gratuita.<br>Desbloquea tickets, fotos, PDF y control total sin límites.</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.5">Has alcanzado el límite de la versión gratuita.<br>¡Hazte Premium para tickets ilimitados!</div>
       <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;margin-bottom:17px;text-align:left">
         <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:9px">✨ Premium incluye:</div>
         <div style="font-size:12px;color:var(--text2);line-height:2">✅ Gastos ilimitados<br>✅ Fotos ilimitadas<br>✅ Exportar Excel y PDF<br>✅ Informe de fotos en la nube</div>
@@ -644,8 +512,7 @@ body{
       <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.22);border-radius:var(--radius-sm);padding:13px;margin-bottom:14px;text-align:left">
         <div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:9px;text-transform:uppercase;letter-spacing:.4px">📥 Descarga tus datos ahora</div>
         <div style="display:flex;gap:7px">
-          <div class="pro-neon-title">COMPARTE TUS INFORMES DE MANERA PROFESIONAL</div>
-<button class="btn btn-green" style="flex:1;margin:0;padding:10px;font-size:12px" onclick="exportExcel();document.getElementById('overlay-photo-limit').classList.remove('open')">📊 Excel</button>
+          <button class="btn btn-green" style="flex:1;margin:0;padding:10px;font-size:12px" onclick="exportExcel();document.getElementById('overlay-photo-limit').classList.remove('open')">📊 Excel</button>
           <button class="btn btn-danger" style="flex:1;margin:0;padding:10px;font-size:12px" onclick="exportPDF();document.getElementById('overlay-photo-limit').classList.remove('open')">📄 PDF</button>
           <button class="btn btn-ghost" style="flex:1;margin:0;padding:10px;font-size:12px;color:var(--accent);border-color:rgba(79,142,247,.3)" onclick="downloadPhotoReport();document.getElementById('overlay-photo-limit').classList.remove('open')">📷 Fotos</button>
         </div>
@@ -705,10 +572,10 @@ const WHATSAPP_NUM   = '34637687764'; // ← CAMBIA ESTE NÚMERO (código país 
 const BUCKET         = 'mis-gastos-pro-eedcf.firebasestorage.app';
 const FREE_LIMIT     = 10;   // max gastos gratis
 const FREE_PHOTO_LIM = 10;   // max fotos gratis
-const CAT_COLORS={Desayuno:'#f59e0b',Comida:'#ef4444',Cena:'#f97316',Gasolina:'#3b82f6',Parking:'#14b8a6',Peajes:'#0ea5e9',"Taxi/Uber":'#8b5cf6',"AVE/Tren":'#6366f1',"Bus/Metro":'#06b6d4',Avión:'#38bdf8',Hotel:'#eab308',Herramientas:'#22c55e',Mecánico:'#84cc16',Material:'#8b5cf6',Varios:'#f97316',Salud:'#06b6d4',Ocio:'#ec4899',Ropa:'#84cc16'};
-const CAT_ICONS={Desayuno:'🥐',Comida:'🍔',Cena:'🍽️',Gasolina:'⛽',Parking:'🅿️',Peajes:'🛣️',"Taxi/Uber":'🚕',"AVE/Tren":'🚄',"Bus/Metro":'🚌',Avión:'✈️',Hotel:'🏨',Herramientas:'🛠️',Mecánico:'🔧',Material:'📦',Varios:'🛍️',Salud:'💊',Ocio:'🎮',Ropa:'👕'};
+const CAT_COLORS={Comida:'#ef4444',Gasolina:'#3b82f6',Transporte:'#eab308',Parking:'#14b8a6',Material:'#8b5cf6',Varios:'#f97316',Salud:'#06b6d4',Ocio:'#ec4899',Ropa:'#84cc16'};
+const CAT_ICONS={Comida:'🍔',Gasolina:'⛽',Transporte:'🚗',Parking:'🅿️',Material:'📦',Varios:'🛍️',Salud:'💊',Ocio:'🎮',Ropa:'👕'};
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const VALID_CATS=['Desayuno','Comida','Cena','Gasolina','Parking','Peajes','Taxi/Uber','AVE/Tren','Bus/Metro','Avión','Hotel','Herramientas','Mecánico','Material','Varios','Salud','Ocio','Ropa'];
+const VALID_CATS=['Comida','Gasolina','Transporte','Parking','Material','Varios','Salud','Ocio','Ropa'];
 const CURRENCIES={EUR:{symbol:'€',name:'Euro',flag:'🇪🇸'},GBP:{symbol:'£',name:'Libra',flag:'🇬🇧'},USD:{symbol:'$',name:'Dólar',flag:'🇺🇸'},MXN:{symbol:'MX$',name:'Peso MX',flag:'🇲🇽'},DOP:{symbol:'RD$',name:'Peso DO',flag:'🇩🇴'}};
 
 // ── STATE ──
@@ -832,69 +699,6 @@ function openWhatsAppPremium(){
   document.getElementById('overlay-premium').classList.remove('open');
 }
 window.openWhatsAppPremium=openWhatsAppPremium;
-
-function buildQuickActionsHTML(){
-  return '<div class="quick-panel" style="margin-top:0;margin-bottom:0">'
-    +'<div class="quick-panel-title">⚡ ACCIONES RÁPIDAS</div>'
-    +'<div class="quick-panel-sub">Exporta, comparte o revisa tus tickets</div>'
-    +'<div class="quick-grid">'
-    +'<div class="quick-card excel" onclick="exportExcel()"><img src="./excel.png" alt="Excel"><div class="quick-card-text"><div class="quick-card-title">Excel</div><div class="quick-card-desc">Exporta tu informe</div></div></div>'
-    +'<div class="quick-card pdf" onclick="exportPDF()"><img src="./pdf.png" alt="PDF"><div class="quick-card-text"><div class="quick-card-title">PDF</div><div class="quick-card-desc">Genera los datos de tu informe</div></div></div>'
-    +'<div class="quick-card fotos" onclick="viewPhotoReport()"><img src="./camara.png" alt="Fotos"><div class="quick-card-text"><div class="quick-card-title">Fotos</div><div class="quick-card-desc">Tus tickets en galería</div></div></div>'
-    +'<div class="quick-card share" onclick="shareMonthlyReport()"><img src="./compartir.png" alt="Compartir"><div class="quick-card-text"><div class="quick-card-title">Compartir</div><div class="quick-card-desc">Envía a tu gestor</div></div></div>'
-    +'</div></div>';
-}
-
-function buildExpenseReportText(){
-  const title='estos son los datos de mi informe de gastos';
-  const month=monthLabel();
-  const groups={};
-  expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
-  let msg=title+'\n'+month+'\nGenerado: '+new Date().toLocaleDateString('es-ES')+'\n';
-  Object.entries(groups).forEach(([code,exps])=>{
-    const c=CURRENCIES[code]||CURRENCIES.EUR,sym=c.symbol;
-    const tot=exps.reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+(Number(e.amount)||0),0);
-    const totals={};exps.forEach(e=>{totals[e.category]=(totals[e.category]||0)+(Number(e.amount)||0);});
-    const cats=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-    const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
-    msg+='\n'+c.flag+' '+c.name+' ('+sym+')\n';
-    msg+='Total: '+sym+tot.toFixed(2)+'\n';
-    msg+='Tarjeta: '+sym+tar.toFixed(2)+'\n';
-    msg+='Efectivo: '+sym+efe.toFixed(2)+'\n';
-    msg+='Gastos: '+exps.length+'\n';
-    msg+='\nDesglose por categoría:\n';
-    cats.forEach(([cat,amt])=>{const pct=tot?((amt/tot)*100).toFixed(0):'0';msg+='- '+cat+': '+sym+amt.toFixed(2)+' ('+pct+'%)\n';});
-    msg+='\nDetalle de gastos:\n';
-    sorted.forEach(e=>{
-      const date=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'—';
-      const pay=e.payment==='tarjeta'?'Tarjeta':'Efectivo';
-      msg+='- '+date+' | '+(e.name||'Sin nombre')+' | '+(e.category||'Sin categoría')+' | '+pay+' | '+sym+(Number(e.amount)||0).toFixed(2)+'\n';
-    });
-  });
-  return msg.trim();
-}
-
-window.shareMonthlyReport=async function(){
-  if(!expenses||!expenses.length){showToast('No hay gastos para compartir');return;}
-  const title='estos son los datos de mi informe de gastos';
-  const msg=buildExpenseReportText();
-  try{
-    if(navigator.share){
-      await navigator.share({title:title,text:msg});
-      showToast('✅ Informe compartido');
-    }else if(navigator.clipboard){
-      await navigator.clipboard.writeText(msg);
-      showToast('📋 Informe copiado');
-    }else{
-      showToast('No se pudo compartir');
-    }
-  }catch(err){
-    if(err && err.name!=='AbortError') showToast('No se pudo compartir');
-  }
-};
-
 
 // ── APP NAME ──
 function updateAppName(val){
@@ -1313,8 +1117,8 @@ async function compressImage(dataUrl,maxPx,quality){
 
 const CR='Currency (STRICT - default ALWAYS EUR): EUR=€/euro or no symbol; GBP=£/pound explicit; USD=$ AND USD/dollar written; MXN=MX$/peso mexicano; DOP=RD$/peso dominicano.';
 const PROMPTS=[
-  'Extract receipt. Return ONLY JSON:\n{"name":"store","amount":0.00,"date":"YYYY-MM-DD","category":"Varios","currency":"EUR","notes":""}\nRules: amount=total decimal, date=YYYY-MM-DD or today, category: Desayuno|Comida|Cena|Gasolina|Parking|Peajes|Taxi/Uber|AVE/Tren|Bus/Metro|Avión|Hotel|Herramientas|Mecánico|Material|Varios|Salud|Ocio|Ropa\n'+CR,
-  'Analiza ticket. Responde SOLO JSON:\n{"name":"COMERCIO","amount":12.50,"date":"2026-04-03","category":"Comida","currency":"EUR","notes":""}\nCategorías: Desayuno|Comida|Cena|Gasolina|Parking|Peajes|Taxi/Uber|AVE/Tren|Bus/Metro|Avión|Hotel|Herramientas|Mecánico|Material|Varios|Salud|Ocio|Ropa\n'+CR,
+  'Extract receipt. Return ONLY JSON:\n{"name":"store","amount":0.00,"date":"YYYY-MM-DD","category":"Varios","currency":"EUR","notes":""}\nRules: amount=total decimal, date=YYYY-MM-DD or today, category: Comida|Gasolina|Transporte|Material|Varios|Salud|Ocio|Ropa\n'+CR,
+  'Analiza ticket. Responde SOLO JSON:\n{"name":"COMERCIO","amount":12.50,"date":"2026-04-03","category":"Comida","currency":"EUR","notes":""}\nCategorías: Comida|Gasolina|Transporte|Material|Varios|Salud|Ocio|Ropa\n'+CR,
   'Look at receipt. Return ONLY JSON:\n{"name":"...","amount":0.00,"date":"YYYY-MM-DD","category":"Varios","currency":"EUR","notes":""}\n'+CR
 ];
 function setScanSt(type,html){const el=document.getElementById('scan-status');el.className='scan-status '+type;el.innerHTML=html;el.style.display='block';}
@@ -1456,10 +1260,15 @@ window.showCharts=function(){
       +'<div style="display:flex;gap:7px"><div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--purple)"></div><span style="font-size:9px;color:var(--text2)">Tarjeta</span></div><div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div><span style="font-size:9px;color:var(--text2)">Efectivo</span></div></div></div></div>'
       +(weeks.length?'<div class="dash-card"><div class="dash-card-title">Gasto por semana</div><div style="display:flex;align-items:flex-end;gap:7px;height:75px">'+weeks.map(([w,a])=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:var(--text2)">'+sym+a.toFixed(0)+'</div><div style="width:100%;background:linear-gradient(180deg,var(--accent),var(--purple2));border-radius:3px 3px 0 0;height:'+Math.max(5,(a/maxW*55)).toFixed(0)+'px"></div><div style="font-size:8px;color:var(--text2)">'+w+'</div></div>').join('')+'</div></div>':'')
       +'<div class="dash-card"><div class="dash-card-title">Desglose por categoría</div>'+cats.map(([cat,amt])=>{const col=CAT_COLORS[cat]||'#888';const icon=CAT_ICONS[cat]||'💰';const pct=(amt/tot*100).toFixed(1);return '<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px">'+icon+' '+cat+'</span><div><span style="font-size:12px;font-weight:800">'+sym+amt.toFixed(2)+'</span><span style="font-size:9px;color:var(--text2);margin-left:3px">'+pct+'%</span></div></div><div style="background:var(--bg3);border-radius:3px;height:6px;overflow:hidden"><div style="width:'+(amt/maxC*100).toFixed(0)+'%;height:100%;background:'+col+';border-radius:3px"></div></div></div>';}).join('')+'</div>'
-      +buildQuickActionsHTML()
+      +'<div class="dash-card"><div class="dash-card-title">Top gastos</div>'+top5.map((e,i)=>{const col=CAT_COLORS[e.category]||'#888';const icon=CAT_ICONS[e.category]||'💰';const cur2=CURRENCIES[e.currency||'EUR']||getCurrency();const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;'+(i<top5.length-1?'border-bottom:1px solid var(--bg3)':'')+'"><div style="font-size:13px;font-weight:900;color:'+(i===0?'var(--amber)':'var(--text2)')+';min-width:20px;text-align:center">#'+(i+1)+'</div><div style="width:33px;height:33px;border-radius:9px;background:'+col+'18;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div><div style="font-size:9px;color:var(--text2)">'+ds+' &bull; '+e.category+'</div></div><div style="font-size:13px;font-weight:800;color:'+col+'">'+cur2.symbol+e.amount.toFixed(2)+'</div></div>';}).join('')+'</div>'
       +(Object.keys(groups).length>1?'<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:15px 0"></div>':'');
   }).join('');
-  document.getElementById('dashboard-body').innerHTML=sections;
+  document.getElementById('dashboard-body').innerHTML=sections
+    +'<div style="display:flex;gap:7px;margin-top:3px">'
+    +'<button class="btn btn-green" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportExcel()">📊 Excel</button>'
+    +'<button class="btn btn-danger" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportPDF()">📄 PDF</button>'
+    +'<button class="btn btn-ghost" style="flex:1;margin:0;padding:11px;font-size:12px;color:var(--accent);border-color:rgba(79,142,247,.3)" onclick="viewPhotoReport()">📷 Fotos</button>'
+    +'</div>';
   showScreen('screen-dashboard');
 };
 
