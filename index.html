@@ -159,24 +159,35 @@ select.form-input option{background:var(--bg2)}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.neon-title {
-  font-size: 16px;
-  font-weight: 900;
-  text-align: center;
-  margin: 12px 16px 18px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #c084fc;
+/* Título neón de informes */
+.neon-title{
+  font-size:16px;
+  font-weight:900;
+  text-align:center;
+  margin:12px 0 14px;
+  padding:10px 12px;
+  text-transform:uppercase;
+  letter-spacing:.9px;
+  line-height:1.35;
+  color:#d8b4fe;
   text-shadow:
     0 0 4px #a855f7,
-    0 0 8px #a855f7,
-    0 0 14px #9333ea,
-    0 0 22px #9333ea;
-  animation: breathing 2.5s ease-in-out infinite;
+    0 0 10px #a855f7,
+    0 0 18px #9333ea,
+    0 0 30px rgba(147,51,234,.9);
+  animation:neonBreathing 2.6s ease-in-out infinite;
 }
-@keyframes breathing {
-  0%, 100% {opacity:0.8; transform:scale(1);}
-  50% {opacity:1; transform:scale(1.05);}
+@keyframes neonBreathing{
+  0%,100%{
+    opacity:.82;
+    transform:scale(1);
+    filter:drop-shadow(0 0 4px rgba(168,85,247,.55));
+  }
+  50%{
+    opacity:1;
+    transform:scale(1.035);
+    filter:drop-shadow(0 0 14px rgba(168,85,247,.95));
+  }
 }
 
 </style>
@@ -611,28 +622,7 @@ function buildPhotoReportHTML(){
     +'<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0a0a0f;color:#f5f5f7;font-family:-apple-system,Arial,sans-serif;padding:16px}'
     +'h1{font-size:18px;color:#4f8ef7;margin-bottom:3px}p.s{font-size:11px;color:#8e8ea0;margin-bottom:13px}'
     +'.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}'
-    +'@media print{body{background:#fff;color:#000}}
-.neon-title {
-  font-size: 16px;
-  font-weight: 900;
-  text-align: center;
-  margin: 12px 16px 18px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #c084fc;
-  text-shadow:
-    0 0 4px #a855f7,
-    0 0 8px #a855f7,
-    0 0 14px #9333ea,
-    0 0 22px #9333ea;
-  animation: breathing 2.5s ease-in-out infinite;
-}
-@keyframes breathing {
-  0%, 100% {opacity:0.8; transform:scale(1);}
-  50% {opacity:1; transform:scale(1.05);}
-}
-
-</style></head><body>'
+    +'@media print{body{background:#fff;color:#000}}</style></head><body>'
     +'<h1>Gastos — '+month+'</h1>'
     +'<p class="s">'+expenses.length+' gastos &bull; '+withPhoto+' con foto &bull; '+new Date().toLocaleDateString('es-ES')+'</p>'
     +'<div class="g">'+cards+'</div></body></html>';
@@ -1241,28 +1231,7 @@ async function cleanupMonth(){
   setP('Borrando gastos...','Eliminando de Firestore');
   try{const snap=await getDocs(collection(db,'users',currentUser.uid,'expenses'));await Promise.all(snap.docs.map(d=>deleteDoc(doc(db,'users',currentUser.uid,'expenses',d.id))));}catch(e){console.warn(e);}
   setP('Reiniciando informe...','Limpiando Storage');
-  try{const empty='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Gastos</title><style>body{background:#0a0a0f;color:#f5f5f7;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}h2{color:#4f8ef7;margin-bottom:8px}p{color:#8e8ea0}
-.neon-title {
-  font-size: 16px;
-  font-weight: 900;
-  text-align: center;
-  margin: 12px 16px 18px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: #c084fc;
-  text-shadow:
-    0 0 4px #a855f7,
-    0 0 8px #a855f7,
-    0 0 14px #9333ea,
-    0 0 22px #9333ea;
-  animation: breathing 2.5s ease-in-out infinite;
-}
-@keyframes breathing {
-  0%, 100% {opacity:0.8; transform:scale(1);}
-  50% {opacity:1; transform:scale(1.05);}
-}
-
-</style></head><body><div><h2>Mis Gastos Pro</h2><p>Nuevo ciclo iniciado.</p></div></body></html>';await uploadString(ref(storage,'usuarios/'+currentUser.uid+'/Fotos_tickets.html'),empty,'raw',{contentType:'text/html;charset=utf-8'});}catch(e){console.warn(e.code);}
+  try{const empty='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Gastos</title><style>body{background:#0a0a0f;color:#f5f5f7;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}h2{color:#4f8ef7;margin-bottom:8px}p{color:#8e8ea0}</style></head><body><div><h2>Mis Gastos Pro</h2><p>Nuevo ciclo iniciado.</p></div></body></html>';await uploadString(ref(storage,'usuarios/'+currentUser.uid+'/Fotos_tickets.html'),empty,'raw',{contentType:'text/html;charset=utf-8'});}catch(e){console.warn(e.code);}
   document.getElementById('close-step2').style.display='none';
   document.getElementById('close-step3').style.display='block';
 }
@@ -1296,6 +1265,7 @@ window.showCharts=function(){
       +(weeks.length?'<div class="dash-card"><div class="dash-card-title">Gasto por semana</div><div style="display:flex;align-items:flex-end;gap:7px;height:75px">'+weeks.map(([w,a])=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:var(--text2)">'+sym+a.toFixed(0)+'</div><div style="width:100%;background:linear-gradient(180deg,var(--accent),var(--purple2));border-radius:3px 3px 0 0;height:'+Math.max(5,(a/maxW*55)).toFixed(0)+'px"></div><div style="font-size:8px;color:var(--text2)">'+w+'</div></div>').join('')+'</div></div>':'')
       +'<div class="dash-card"><div class="dash-card-title">Desglose por categoría</div>'+cats.map(([cat,amt])=>{const col=CAT_COLORS[cat]||'#888';const icon=CAT_ICONS[cat]||'💰';const pct=(amt/tot*100).toFixed(1);return '<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px">'+icon+' '+cat+'</span><div><span style="font-size:12px;font-weight:800">'+sym+amt.toFixed(2)+'</span><span style="font-size:9px;color:var(--text2);margin-left:3px">'+pct+'%</span></div></div><div style="background:var(--bg3);border-radius:3px;height:6px;overflow:hidden"><div style="width:'+(amt/maxC*100).toFixed(0)+'%;height:100%;background:'+col+';border-radius:3px"></div></div></div>';}).join('')+'</div>'
       +'<div class="dash-card"><div class="dash-card-title">Top gastos</div>'+top5.map((e,i)=>{const col=CAT_COLORS[e.category]||'#888';const icon=CAT_ICONS[e.category]||'💰';const cur2=CURRENCIES[e.currency||'EUR']||getCurrency();const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;'+(i<top5.length-1?'border-bottom:1px solid var(--bg3)':'')+'"><div style="font-size:13px;font-weight:900;color:'+(i===0?'var(--amber)':'var(--text2)')+';min-width:20px;text-align:center">#'+(i+1)+'</div><div style="width:33px;height:33px;border-radius:9px;background:'+col+'18;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div><div style="font-size:9px;color:var(--text2)">'+ds+' &bull; '+e.category+'</div></div><div style="font-size:13px;font-weight:800;color:'+col+'">'+cur2.symbol+e.amount.toFixed(2)+'</div></div>';}).join('')+'</div>'
+      +'<div class="neon-title">DESCARGA Y ENVÍA TUS INFORMES DE MANERA PROFESIONAL</div>'
       +(Object.keys(groups).length>1?'<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:15px 0"></div>':'');
   }).join('');
   document.getElementById('dashboard-body').innerHTML=sections
