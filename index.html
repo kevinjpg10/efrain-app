@@ -158,11 +158,6 @@ select.form-input option{background:var(--bg2)}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-
-
-
-  
 </style>
 </head>
 <body>
@@ -1240,12 +1235,6 @@ window.showCharts=function(){
       +'<div class="dash-card"><div class="dash-card-title">Top gastos</div>'+top5.map((e,i)=>{const col=CAT_COLORS[e.category]||'#888';const icon=CAT_ICONS[e.category]||'💰';const cur2=CURRENCIES[e.currency||'EUR']||getCurrency();const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;'+(i<top5.length-1?'border-bottom:1px solid var(--bg3)':'')+'"><div style="font-size:13px;font-weight:900;color:'+(i===0?'var(--amber)':'var(--text2)')+';min-width:20px;text-align:center">#'+(i+1)+'</div><div style="width:33px;height:33px;border-radius:9px;background:'+col+'18;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div><div style="font-size:9px;color:var(--text2)">'+ds+' &bull; '+e.category+'</div></div><div style="font-size:13px;font-weight:800;color:'+col+'">'+cur2.symbol+e.amount.toFixed(2)+'</div></div>';}).join('')+'</div>'
       +(Object.keys(groups).length>1?'<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:15px 0"></div>':'');
   }).join('');
-
-<div class="pro-neon-title">
-  COMPARTE TUS INFORMES DE MANERA PROFESIONAL
-</div>
-
-  
   document.getElementById('dashboard-body').innerHTML=sections
     +'<div style="display:flex;gap:7px;margin-top:3px">'
     +'<button class="btn btn-green" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportExcel()">📊 Excel</button>'
