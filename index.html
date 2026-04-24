@@ -189,6 +189,36 @@ select.form-input option{background:var(--bg2)}
     filter:drop-shadow(0 0 14px rgba(168,85,247,.95));
   }
 }
+/* Título neón debajo de Todos */
+.camera-neon-title{
+  font-size:15px;
+  font-weight:900;
+  text-align:center;
+  margin:0 16px 12px;
+  padding:7px 10px;
+  text-transform:uppercase;
+  letter-spacing:.75px;
+  line-height:1.28;
+  color:#4f8ef7;
+  text-shadow:
+    0 0 4px #4f8ef7,
+    0 0 10px #4f8ef7,
+    0 0 18px #3d6fd4,
+    0 0 30px rgba(79,142,247,.9);
+  animation:cameraNeonBreathing 2.5s ease-in-out infinite;
+}
+@keyframes cameraNeonBreathing{
+  0%,100%{
+    opacity:.82;
+    transform:scale(1);
+    filter:drop-shadow(0 0 4px rgba(79,142,247,.55));
+  }
+  50%{
+    opacity:1;
+    transform:scale(1.035);
+    filter:drop-shadow(0 0 14px rgba(79,142,247,.95));
+  }
+}
 
 </style>
 </head>
@@ -262,6 +292,7 @@ select.form-input option{background:var(--bg2)}
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
     <button class="tab" onclick="setFilterCard('efectivo')">💵 Efectivo</button>
   </div>
+  <div class="camera-neon-title">ABRE TU CAMARA Y EMPIEZA A GUARDAR TUS GASTOS</div>
   <div class="list" id="expense-list"></div>
   <button class="fab" id="fab-btn" onclick="showAddSheet()">＋</button>
 </div>
