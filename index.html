@@ -192,7 +192,7 @@ select.form-input option{background:var(--bg2)}
   display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px
 }
 .quick-card{
-  display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;
+  display:flex;align-items:center;gap:12px;padding:14px;border-radius:18px;
   background:#0f1425;border:1px solid rgba(255,255,255,.05);cursor:pointer;
   transition:transform .18s ease, box-shadow .18s ease;
   box-shadow:0 8px 25px rgba(0,0,0,.22);
@@ -202,29 +202,12 @@ select.form-input option{background:var(--bg2)}
 .quick-card.excel{border-color:rgba(0,255,100,.28)}
 .quick-card.pdf{border-color:rgba(255,0,0,.28)}
 .quick-card.fotos{border-color:rgba(0,120,255,.28)}
-.quick-card.share{border-color:rgba(255,0,0,.28)}
+.quick-card.share{border-color:rgba(150,80,255,.28)}
 .quick-card img{
-  width:56px;
-  height:56px;
-  border-radius:14px;
-  object-fit:cover;
-  object-position:center;
-  flex-shrink:0;
-  display:block;
-  background:transparent;
-  box-shadow:none;
+  width:50px;height:50px;border-radius:12px;object-fit:contain;object-position:center;flex-shrink:0;display:block
 }
-
-.quick-card.fotos img,
-.quick-card.share img,
-.quick-card.pdf img,
-.quick-card.excel img{
-  width:56px;
-  height:56px;
-  margin:0;
-  object-fit:cover;
-  object-position:center;
-  display:block;
+.quick-card.fotos img{
+  margin:auto;object-fit:contain;object-position:center
 }
 .quick-card-text{min-width:0}
 .quick-card-title{font-size:14px;font-weight:700;color:#fff}
@@ -827,10 +810,10 @@ function buildQuickActionsHTML(){
     +'<div class="quick-panel-title">⚡ ACCIONES RÁPIDAS</div>'
     +'<div class="quick-panel-sub">Exporta, comparte o revisa tus tickets</div>'
     +'<div class="quick-grid">'
-    +'<div class="quick-card excel" onclick="exportExcel()"><img src="./excel.png" alt="Excel"><div class="quick-card-text"><div class="quick-card-title">Excel</div><div class="quick-card-desc">Exporta tu informe</div></div></div>'
-    +'<div class="quick-card pdf" onclick="exportPDF()"><img src="./pdf.png" alt="PDF"><div class="quick-card-text"><div class="quick-card-title">PDF</div><div class="quick-card-desc">Genera los datos de tu informe</div></div></div>'
-    +'<div class="quick-card fotos" onclick="viewPhotoReport()"><img src="./camara.png" alt="Fotos"><div class="quick-card-text"><div class="quick-card-title">Fotos</div><div class="quick-card-desc">Tus tickets en galería</div></div></div>'
-    +'<div class="quick-card share" onclick="shareMonthlyReport()"><img src="./compartir.png" alt="Compartir"><div class="quick-card-text"><div class="quick-card-title">Compartir</div><div class="quick-card-desc">Envía a tu gestor</div></div></div>'
+    +'<div class="quick-card excel" onclick="exportExcel()"><img src="./excel.png"><div class="quick-card-text"><div class="quick-card-title">Excel</div><div class="quick-card-desc">Exporta tu informe</div></div></div>'
+    +'<div class="quick-card pdf" onclick="exportPDF()"><img src="./pdf.png"><div class="quick-card-text"><div class="quick-card-title">PDF</div><div class="quick-card-desc">Genera los datos de tu informe</div></div></div>'
+    +'<div class="quick-card fotos" onclick="viewPhotoReport()"><img src="./camara.png"><div class="quick-card-text"><div class="quick-card-title">Fotos</div><div class="quick-card-desc">Tus tickets en galería</div></div></div>'
+    +'<div class="quick-card share" onclick="shareMonthlyReport()"><img src="./compartir.png"><div class="quick-card-text"><div class="quick-card-title">Compartir</div><div class="quick-card-desc">Envía a tu gestor</div></div></div>'
     +'</div></div>';
 }
 
