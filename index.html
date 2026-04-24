@@ -231,6 +231,60 @@ select.form-input option{background:var(--bg2)}
   .quick-grid{grid-template-columns:1fr}
 }
 
+
+/* === FIX SCROLL GLOBAL / MÓVIL ===
+   El bloqueo venía de usar pantallas con height:100vh y scroll interno fijo.
+   Estas reglas permiten que la página completa vuelva a desplazarse correctamente,
+   especialmente cuando el panel rápido + cabecera superan la altura del móvil. */
+html{
+  width:100%;
+  min-height:100%;
+  height:auto;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+body{
+  width:100%;
+  min-height:100dvh;
+  height:auto;
+  overflow-x:hidden;
+  overflow-y:auto;
+  touch-action:pan-y;
+}
+.screen{
+  height:auto;
+  min-height:100dvh;
+  max-height:none;
+  overflow-y:auto;
+}
+.screen.active{display:flex}
+#screen-main.screen.active{
+  height:auto;
+  min-height:100dvh;
+  overflow-y:auto;
+}
+#screen-main .header,
+#screen-main .month-strip,
+#screen-main .stats,
+#screen-main .tabs,
+#screen-main .quick-panel{
+  flex-shrink:0;
+}
+#screen-main .list{
+  flex:none;
+  min-height:160px;
+  overflow:visible;
+  padding-bottom:calc(110px + env(safe-area-inset-bottom));
+}
+@supports (height:100svh){
+  body{min-height:100svh}
+  .screen{min-height:100svh}
+  #screen-main.screen.active{min-height:100svh}
+}
+@media (max-height:700px){
+  .auth-wrap{justify-content:flex-start}
+}
+
 </style>
 </head>
 <body>
