@@ -199,7 +199,7 @@ select.form-input option{background:var(--bg2)}
 <div class="screen" id="screen-auth">
   <div class="auth-wrap">
    <img id="auth-icon" src="icon.png" style="width:78px;height:78px;border-radius:23px;object-fit:cover;margin-bottom:17px;box-shadow:0 8px 28px rgba(79,142,247,.4)" alt="logo">
-    <div class="auth-title" id="auth-app-title">Mis  Pro</div>
+    <div class="auth-title" id="auth-app-title">Mis Gastos Pro</div>
     <div class="auth-sub">Gestiona tus gastos de forma inteligente</div>
     <div class="auth-card">
       <div class="auth-tabs">
@@ -255,6 +255,9 @@ select.form-input option{background:var(--bg2)}
     <button class="tab active" onclick="setFilter('all',this);currentCurrencyFilter=null">✦ Todos</button>
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
     <button class="tab" onclick="setFilterCard('efectivo')">💵 Efectivo</button>
+    <button class="tab" onclick="setFilterCard('bizum')">📲 Bizum</button>
+    <button class="tab" onclick="setFilterCard('transferencia')">🏦 Transferencia</button>
+    <button class="tab" onclick="setFilterCard('paypal')">🅿️ PayPal</button>
   </div>
   <div class="neon-title">ABRE TU CAMARA Y EMPIEZA A GUARDAR TUS GASTOS</div>
   <div class="list" id="expense-list"></div>
@@ -422,7 +425,7 @@ select.form-input option{background:var(--bg2)}
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Categoría</label><select class="form-input" id="f-category"><option value="Comida">🍔 Comida</option><option value="Gasolina">⛽ Gasolina</option><option value="Transporte">🚗 Transporte</option><option value="Parking">🅿️ Parking</option><option value="Material">📦 Material</option><option value="Varios">🛍️ Varios</option><option value="Salud">💊 Salud</option><option value="Ocio">🎮 Ocio</option><option value="Ropa">👕 Ropa</option></select></div>
-      <div class="form-group"><label class="form-label">Método pago</label><select class="form-input" id="f-payment"><option value="tarjeta">💳 Tarjeta</option><option value="efectivo">💵 Efectivo</option></select></div>
+      <div class="form-group"><label class="form-label">Método pago</label><select class="form-input" id="f-payment"><option value="tarjeta">💳 Tarjeta</option><option value="efectivo">💵 Efectivo</option><option value="bizum">📲 Bizum</option><option value="transferencia">🏦 Transferencia</option><option value="paypal">🅿️ PayPal</option><option value="otro">💰 Otro</option></select></div>
     </div>
     <div class="form-group"><label class="form-label">Notas</label><input class="form-input" id="f-notes" placeholder="Opcional..." type="text"></div>
     <input type="hidden" id="f-id">
@@ -576,6 +579,9 @@ const CAT_ICONS={Comida:'🍔',Gasolina:'⛽',Transporte:'🚗',Parking:'🅿️
 const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const VALID_CATS=['Comida','Gasolina','Transporte','Parking','Material','Varios','Salud','Ocio','Ropa'];
 const CURRENCIES={EUR:{symbol:'€',name:'Euro',flag:'🇪🇸'},GBP:{symbol:'£',name:'Libra',flag:'🇬🇧'},USD:{symbol:'$',name:'Dólar',flag:'🇺🇸'},MXN:{symbol:'MX$',name:'Peso MX',flag:'🇲🇽'},DOP:{symbol:'RD$',name:'Peso DO',flag:'🇩🇴'}};
+const PAYMENT_METHODS={tarjeta:{label:'Tarjeta',icon:'💳',color:'var(--purple)'},efectivo:{label:'Efectivo',icon:'💵',color:'var(--green)'},bizum:{label:'Bizum',icon:'📲',color:'var(--accent)'},transferencia:{label:'Transferencia',icon:'🏦',color:'var(--amber)'},paypal:{label:'PayPal',icon:'🅿️',color:'var(--purple2)'},otro:{label:'Otro',icon:'💰',color:'var(--text2)'}};
+function paymentInfo(value){return PAYMENT_METHODS[value]||PAYMENT_METHODS.otro;}
+function paymentLabel(value){const p=paymentInfo(value);return p.icon+' '+p.label;}
 
 // ── STATE ──
 let currentUser=null, expenses=[], currentFilter='all', currentCurrencyFilter=null;
@@ -967,17 +973,16 @@ function render(){
 function renderStats(){
   const byCur={};
   expenses.forEach(e=>{const c=e.currency||'EUR';if(!byCur[c]){byCur[c]={total:0,count:0};}byCur[c].total+=e.amount;byCur[c].count++;});
-  const tar=expenses.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0);
-  const efe=expenses.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
-  const tC=expenses.filter(e=>e.payment==='tarjeta').length;
-  const eC=expenses.filter(e=>e.payment==='efectivo').length;
   const cards=Object.entries(byCur).map(([code,d])=>{const c=CURRENCIES[code]||CURRENCIES.EUR;return '<div class="stat-card" onclick="setFilterCurrency(\''+code+'\')" style="border-top:3px solid var(--accent)"><span class="sc-icon">'+c.flag+'</span><div class="sc-val" style="color:var(--accent)">'+c.symbol+d.total.toFixed(2)+'</div><div class="sc-label">'+d.count+' gastos</div></div>';}).join('');
-  document.getElementById('stats-area').innerHTML=cards
-    +'<div class="stat-card" onclick="setFilterCard(\'tarjeta\')" style="border-top:3px solid var(--purple)"><span class="sc-icon">💳</span><div class="sc-val" style="color:var(--purple)">'+tar.toFixed(2)+'</div><div class="sc-label">'+tC+' tarjeta</div></div>'
-    +'<div class="stat-card" onclick="setFilterCard(\'efectivo\')" style="border-top:3px solid var(--green)"><span class="sc-icon">💵</span><div class="sc-val" style="color:var(--green)">'+efe.toFixed(2)+'</div><div class="sc-label">'+eC+' efectivo</div></div>';
+  const payCards=Object.entries(PAYMENT_METHODS).filter(([key])=>key!=='otro').map(([key,info])=>{
+    const total=expenses.filter(e=>(e.payment||'tarjeta')===key).reduce((sum,e)=>sum+e.amount,0);
+    const count=expenses.filter(e=>(e.payment||'tarjeta')===key).length;
+    return '<div class="stat-card" onclick="setFilterCard(\''+key+'\')" style="border-top:3px solid '+info.color+'"><span class="sc-icon">'+info.icon+'</span><div class="sc-val" style="color:'+info.color+'">'+total.toFixed(2)+'</div><div class="sc-label">'+count+' '+info.label.toLowerCase()+'</div></div>';
+  }).join('');
+  document.getElementById('stats-area').innerHTML=cards+payCards;
 }
 
-window.setFilterCard=function(f){currentFilter=f;currentCurrencyFilter=null;document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===(f==='all'?0:f==='tarjeta'?1:2)));renderList();};
+window.setFilterCard=function(f){currentFilter=f;currentCurrencyFilter=null;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent.toLowerCase().includes(paymentInfo(f).label.toLowerCase())));renderList();};
 window.setFilterCurrency=function(code){currentCurrencyFilter=code;currentFilter='all';document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));renderList();const c=CURRENCIES[code]||CURRENCIES.EUR;showToast(c.flag+' '+c.name);};
 window.setFilter=function(f,el){currentFilter=f;currentCurrencyFilter=null;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderList();};
 
@@ -1012,7 +1017,7 @@ window.showDetail=function(id){
     +'<div class="detail-row"><span class="detail-row-label">📅 Fecha</span><span class="detail-row-val">'+ds+'</span></div>'
     +'<div class="detail-row"><span class="detail-row-label">🏷️ Categoría</span><span class="detail-row-val">'+icon+' '+e.category+'</span></div>'
     +'<div class="detail-row"><span class="detail-row-label">💱 Moneda</span><span class="detail-row-val">'+cur.flag+' '+cur.name+'</span></div>'
-    +'<div class="detail-row"><span class="detail-row-label">💳 Método</span><span class="detail-row-val" style="color:'+(e.payment==='tarjeta'?'var(--purple)':'var(--green)')+'">'+( e.payment==='tarjeta'?'💳 Tarjeta':'💵 Efectivo')+'</span></div>'
+    +'<div class="detail-row"><span class="detail-row-label">💳 Método</span><span class="detail-row-val" style="color:'+paymentInfo(e.payment).color+'">'+paymentLabel(e.payment)+'</span></div>'
     +(e.notes?'<div class="detail-row"><span class="detail-row-label">📝 Notas</span><span class="detail-row-val">'+e.notes+'</span></div>':'')
     +(e.photo?'<button class="btn btn-ghost" style="margin-top:11px;margin-bottom:7px" onclick="viewPhoto(\''+e.id+'\')">📷 Ver foto del ticket</button>':'')
     +'<div style="display:flex;gap:7px;margin-top:'+(e.photo?'0':'14px')+'"><button class="btn btn-ghost" style="flex:1;margin:0" onclick="editExpense(\''+e.id+'\')">✏️ Editar</button><button class="btn btn-danger" style="flex:1;margin:0" onclick="deleteExpense(\''+e.id+'\')">🗑️ Borrar</button></div>';
@@ -1033,7 +1038,7 @@ function openAddSheet(edit){
   document.getElementById('f-amount').value=edit?edit.amount:'';
   document.getElementById('f-date').value=edit?edit.date:new Date().toISOString().split('T')[0];
   document.getElementById('f-category').value=edit?edit.category:'Varios';
-  document.getElementById('f-payment').value=edit?edit.payment:'tarjeta';
+  document.getElementById('f-payment').value=edit?(edit.payment||'tarjeta'):'tarjeta';
   document.getElementById('f-notes').value=edit?(edit.notes||''):'';
   document.getElementById('sheet-title').textContent=edit?'Editar gasto':'Nuevo gasto';
   const prev=document.getElementById('scan-preview');
@@ -1204,13 +1209,11 @@ window.deleteAll=async function(){
 
 window.showCloseMonth=function(){
   const tot=expenses.reduce((s,e)=>s+e.amount,0);
-  const tar=expenses.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0);
-  const efe=expenses.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
+  const paymentTotals={};expenses.forEach(e=>{const k=e.payment||'tarjeta';paymentTotals[k]=(paymentTotals[k]||0)+e.amount;});
+  const paymentLines=Object.entries(paymentTotals).sort((a,b)=>b[1]-a[1]).map(([k,v])=>{const p=paymentInfo(k);return '<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2)">'+p.icon+' '+p.label+'</span><span style="color:'+p.color+';font-weight:600">€'+v.toFixed(2)+'</span></div>';}).join('');
   document.getElementById('close-month-sub').textContent=monthLabel()+' · '+expenses.length+' gastos';
   document.getElementById('close-month-summary').innerHTML=
-    '<div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:var(--text2)">Total mes</span><span style="font-weight:800;font-size:19px;color:var(--amber)">€'+tot.toFixed(2)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="color:var(--text2)">💳 Tarjeta</span><span style="color:var(--purple);font-weight:600">€'+tar.toFixed(2)+'</span></div>'
-    +'<div style="display:flex;justify-content:space-between"><span style="color:var(--text2)">💵 Efectivo</span><span style="color:var(--green);font-weight:600">€'+efe.toFixed(2)+'</span></div>';
+    '<div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="color:var(--text2)">Total mes</span><span style="font-weight:800;font-size:19px;color:var(--amber)">€'+tot.toFixed(2)+'</span></div>'+paymentLines;
   document.getElementById('close-step1').style.display='block';
   document.getElementById('close-step2').style.display='none';
   document.getElementById('close-step3').style.display='none';
@@ -1239,6 +1242,8 @@ window.showCharts=function(){
   const sections=Object.entries(groups).map(([code,exps])=>{
     const c=CURRENCIES[code]||CURRENCIES.EUR,sym=c.symbol;
     const tot=exps.reduce((s,e)=>s+e.amount,0),tar=exps.filter(e=>e.payment==='tarjeta').reduce((s,e)=>s+e.amount,0),efe=exps.filter(e=>e.payment==='efectivo').reduce((s,e)=>s+e.amount,0);
+    const paymentTotals={};exps.forEach(e=>{const k=e.payment||'tarjeta';paymentTotals[k]=(paymentTotals[k]||0)+e.amount;});
+    const paymentRows=Object.entries(paymentTotals).sort((a,b)=>b[1]-a[1]);
     const tP=tot>0?tar/tot:0,eP=tot>0?efe/tot:0,avg=exps.length?tot/exps.length:0;
     const totals={};exps.forEach(e=>{totals[e.category]=(totals[e.category]||0)+e.amount;});
     const cats=Object.entries(totals).sort((a,b)=>b[1]-a[1]),maxC=cats[0]?.[1]||1;
@@ -1256,11 +1261,11 @@ window.showCharts=function(){
       +'<div class="dash-card" style="padding:13px"><div class="dash-card-title">Por categoría</div><svg viewBox="0 0 156 156" style="width:100%;max-width:125px;display:block;margin:0 auto 9px"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--bg3)" stroke-width="'+sw+'"/>'+arcs+'<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text)">'+sym+tot.toFixed(0)+'</text><text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-size="7" fill="var(--text2)">total</text></svg>'+cats.slice(0,4).map(([cat,amt])=>'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px"><div style="width:8px;height:8px;border-radius:3px;background:'+(CAT_COLORS[cat]||'#888')+';flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(CAT_ICONS[cat]||'')+' '+cat+'</span><span style="font-size:10px;font-weight:700">'+sym+amt.toFixed(0)+'</span></div>').join('')+'</div>'
       +'<div class="dash-card" style="padding:13px"><div class="dash-card-title">Método pago</div><svg viewBox="0 0 100 100" style="width:100%;max-width:105px;display:block;margin:0 auto 7px"><circle cx="50" cy="50" r="36" fill="none" stroke="var(--bg3)" stroke-width="16"/><circle cx="50" cy="50" r="36" fill="none" stroke="var(--purple)" stroke-width="16" stroke-dasharray="'+(tP*c2).toFixed(2)+' '+c2.toFixed(2)+'" stroke-dashoffset="'+(c2/4).toFixed(2)+'"/><circle cx="50" cy="50" r="36" fill="none" stroke="var(--green)" stroke-width="16" stroke-dasharray="'+(eP*c2).toFixed(2)+' '+c2.toFixed(2)+'" stroke-dashoffset="'+(c2/4-tP*c2).toFixed(2)+'"/><text x="50" y="46" text-anchor="middle" font-size="10" font-weight="800" fill="var(--text)">'+(tP*100).toFixed(0)+'%</text><text x="50" y="57" text-anchor="middle" font-size="7" fill="var(--text2)">tarjeta</text></svg>'
       +'<div style="background:var(--bg3);border-radius:7px;padding:9px;text-align:center;margin-bottom:7px"><div style="font-size:8px;color:var(--text2);margin-bottom:2px;text-transform:uppercase">Ticket medio</div><div style="font-size:17px;font-weight:800;color:var(--amber)">'+sym+avg.toFixed(2)+'</div></div>'
-      +'<div style="display:flex;gap:7px"><div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--purple)"></div><span style="font-size:9px;color:var(--text2)">Tarjeta</span></div><div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div><span style="font-size:9px;color:var(--text2)">Efectivo</span></div></div></div></div>'
+      +'<div style="display:flex;gap:7px;flex-wrap:wrap">'+paymentRows.map(([k,a])=>{const p=paymentInfo(k);return '<div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:'+p.color+'"></div><span style="font-size:9px;color:var(--text2)">'+p.icon+' '+p.label+' '+sym+a.toFixed(0)+'</span></div>';}).join('')+'</div></div></div>'
       +(weeks.length?'<div class="dash-card"><div class="dash-card-title">Gasto por semana</div><div style="display:flex;align-items:flex-end;gap:7px;height:75px">'+weeks.map(([w,a])=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:var(--text2)">'+sym+a.toFixed(0)+'</div><div style="width:100%;background:linear-gradient(180deg,var(--accent),var(--purple2));border-radius:3px 3px 0 0;height:'+Math.max(5,(a/maxW*55)).toFixed(0)+'px"></div><div style="font-size:8px;color:var(--text2)">'+w+'</div></div>').join('')+'</div></div>':'')
       +'<div class="dash-card"><div class="dash-card-title">Desglose por categoría</div>'+cats.map(([cat,amt])=>{const col=CAT_COLORS[cat]||'#888';const icon=CAT_ICONS[cat]||'💰';const pct=(amt/tot*100).toFixed(1);return '<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px">'+icon+' '+cat+'</span><div><span style="font-size:12px;font-weight:800">'+sym+amt.toFixed(2)+'</span><span style="font-size:9px;color:var(--text2);margin-left:3px">'+pct+'%</span></div></div><div style="background:var(--bg3);border-radius:3px;height:6px;overflow:hidden"><div style="width:'+(amt/maxC*100).toFixed(0)+'%;height:100%;background:'+col+';border-radius:3px"></div></div></div>';}).join('')+'</div>'
       +'<div class="dash-card"><div class="dash-card-title">Top gastos</div>'+top5.map((e,i)=>{const col=CAT_COLORS[e.category]||'#888';const icon=CAT_ICONS[e.category]||'💰';const cur2=CURRENCIES[e.currency||'EUR']||getCurrency();const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;'+(i<top5.length-1?'border-bottom:1px solid var(--bg3)':'')+'"><div style="font-size:13px;font-weight:900;color:'+(i===0?'var(--amber)':'var(--text2)')+';min-width:20px;text-align:center">#'+(i+1)+'</div><div style="width:33px;height:33px;border-radius:9px;background:'+col+'18;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div><div style="font-size:9px;color:var(--text2)">'+ds+' &bull; '+e.category+'</div></div><div style="font-size:13px;font-weight:800;color:'+col+'">'+cur2.symbol+e.amount.toFixed(2)+'</div></div>';}).join('')+'</div>'
-      +'<div class="neon-title">DESCARGA Y COMPARTE TUS INFORMES DE MANERA PROFESIONAL</div>'
+      +'<div class="neon-title">DESCARGA Y COMPARTE TUS INFORMES DE DE MANERA PROFESIONAL</div>'
       +(Object.keys(groups).length>1?'<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:15px 0"></div>':'');
   }).join('');
   document.getElementById('dashboard-body').innerHTML=sections
@@ -1297,67 +1302,28 @@ window.exportExcel = async function() {
         groups[cur].push(e);
     });
 
-    // ── HOJA RESUMEN POR CATEGORÍA ──
-    const resumenCategorias = {};
-
-    expenses.forEach(e => {
-        const cat = e.category || 'Sin categoría';
-        const amount = Number(e.amount) || 0;
-
-        if (!resumenCategorias[cat]) resumenCategorias[cat] = 0;
-        resumenCategorias[cat] += amount;
-    });
-
-    const resumenRows = Object.entries(resumenCategorias)
-        .sort((a, b) => a[0].localeCompare(b[0], 'es'))
-        .map(([categoria, total]) => ({
-            Categoría: categoria,
-            Total: Number(total.toFixed(2))
-        }));
-
-    const wsResumen = XLSX.utils.json_to_sheet(resumenRows);
-
-    wsResumen['!cols'] = [
-        { wch: 24 },
-        { wch: 14 }
-    ];
-
-    // Formato numérico con 2 decimales
-    for (let i = 2; i <= resumenRows.length + 1; i++) {
-        const cell = wsResumen[`B${i}`];
-        if (cell) cell.z = '0.00';
-    }
-
-    XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
-
-    // ── HOJAS POR MONEDA ──
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
         const amtCol = 'Importe (' + sym + ')';
-        const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
 
         const rows = sorted.map(e => ({
             Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
             Establecimiento: e.name || "",
             Categoría: e.category || "",
-            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-            [amtCol]: Number(e.amount) || 0,
+            'Método de pago': paymentInfo(e.payment).label,
+            [amtCol]: e.amount,
             Notas: e.notes || ''
         }));
 
-        const tot = exps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-        const tar = exps
-            .filter(e => e.payment === 'tarjeta')
-            .reduce((s, e) => s + (Number(e.amount) || 0), 0);
-        const efe = exps
-            .filter(e => e.payment === 'efectivo')
-            .reduce((s, e) => s + (Number(e.amount) || 0), 0);
+        const tot = exps.reduce((s, e) => s + e.amount, 0);
+        const paymentTotals = {};
+        exps.forEach(e => { const k = e.payment || 'tarjeta'; paymentTotals[k] = (paymentTotals[k] || 0) + e.amount; });
 
         rows.push({});
-        rows.push({ Fecha: 'TOTAL', [amtCol]: Number(tot.toFixed(2)) });
-        rows.push({ Fecha: 'Tarjeta', [amtCol]: Number(tar.toFixed(2)) });
-        rows.push({ Fecha: 'Efectivo', [amtCol]: Number(efe.toFixed(2)) });
+        rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
+        Object.entries(paymentTotals).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => rows.push({ Fecha: paymentInfo(k).label, [amtCol]: v }));
 
         if (photoUrl) {
             const shortPhotoUrl = currentUser
@@ -1374,14 +1340,8 @@ window.exportExcel = async function() {
         const ws = XLSX.utils.json_to_sheet(rows);
 
         ws['!cols'] = [
-            { wch: 24 },
-            { wch: 72 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 12 },
-            { wch: 20 }
+            {wch:24}, {wch:72}, {wch:15}, {wch:15}, {wch:12}, {wch:20}
         ];
-
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
@@ -1420,7 +1380,7 @@ window.exportPDF=async function(){
     doc.setTextColor(120,120,140);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text('DESGLOSE POR CATEGORÍA',18,yy+5.5);yy+=11;
     cats.forEach(([cat,amt])=>{const hex=CAT_COLORS[cat]||'#888888';const rgb=hex.replace('#','').match(/.{2}/g).map(x=>parseInt(x,16));const pct=amt/tot;doc.setFillColor(...BG3);doc.roundedRect(18,yy,116,4,1,1,'F');doc.setFillColor(...rgb);doc.roundedRect(18,yy,Math.max(2,pct*116),4,1,1,'F');doc.setTextColor(200,200,215);doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.text(cat,18,yy-1.3);doc.setTextColor(180,180,195);doc.text(sym+amt.toFixed(2)+' ('+(pct*100).toFixed(0)+'%)',138,yy+3);yy+=9;});yy+=4;
     const sorted=exps.slice().sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
-    const rows=sorted.map(e=>[e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'—',e.name.length>30?e.name.slice(0,29)+'…':e.name,e.category,e.payment==='tarjeta'?'Tarjeta':'Efectivo',sym+e.amount.toFixed(2)]);
+    const rows=sorted.map(e=>[e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES'):'—',e.name.length>30?e.name.slice(0,29)+'…':e.name,e.category,paymentInfo(e.payment).label,sym+e.amount.toFixed(2)]);
     const catRGB={};cats.forEach(([ct])=>{catRGB[ct]=CAT_COLORS[ct]?.replace('#','').match(/.{2}/g).map(x=>parseInt(x,16))||[100,100,100];});
     doc.autoTable({startY:yy,head:[['Fecha','Establecimiento','Categoría','Pago','Importe']],body:rows,foot:[['','','','TOTAL',sym+tot.toFixed(2)]],headStyles:{fillColor:[25,25,40],textColor:[79,142,247],fontStyle:'bold',fontSize:8},footStyles:{fillColor:[15,15,25],textColor:[245,158,11],fontStyle:'bold',fontSize:8.5},bodyStyles:{fillColor:[19,19,26],textColor:[215,215,225],fontSize:7.5},alternateRowStyles:{fillColor:[23,23,32]},columnStyles:{0:{cellWidth:23},1:{cellWidth:66},2:{cellWidth:28},3:{cellWidth:23},4:{cellWidth:24,halign:'right'}},margin:{left:14,right:14},theme:'grid',styles:{lineColor:[35,35,50],lineWidth:0.3},
       didDrawCell:data=>{if(data.section==='body'&&data.column.index===2){const cat=data.cell.raw;const rgb=catRGB[cat];if(rgb){doc.setFillColor(...rgb);doc.roundedRect(data.cell.x+1,data.cell.y+1.5,data.cell.width-2,data.cell.height-3,1,1,'F');doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.text(cat,data.cell.x+data.cell.width/2,data.cell.y+data.cell.height/2+0.5,'center');}}}
