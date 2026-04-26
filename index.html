@@ -158,6 +158,32 @@ select.form-input option{background:var(--bg2)}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+
+.neon-title{
+  font-size:13px;
+  font-weight:800;
+  text-align:center;
+  margin:10px 0 8px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  line-height:1.3;
+  color:#6b7280;
+  text-shadow:0 0 2px rgba(107,114,128,.25);
+  animation:breathingSoft 2.5s ease-in-out infinite;
+}
+@keyframes breathingSoft{
+  0%,100%{opacity:.65;transform:scale(1);}
+  50%{opacity:.9;transform:scale(1.015);}
+}
+
+  50%{
+    opacity:1;
+    transform:scale(1.035);
+    filter:drop-shadow(0 0 14px rgba(168,85,247,.95));
+  }
+}
+
 </style>
 </head>
 <body>
@@ -230,6 +256,7 @@ select.form-input option{background:var(--bg2)}
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
     <button class="tab" onclick="setFilterCard('efectivo')">💵 Efectivo</button>
   </div>
+  <div class="neon-title">ABRE TU CAMARA Y EMPIEZA A GUARDAR TUS GASTOS</div>
   <div class="list" id="expense-list"></div>
   <button class="fab" id="fab-btn" onclick="showAddSheet()">＋</button>
 </div>
@@ -319,9 +346,9 @@ select.form-input option{background:var(--bg2)}
       <button class="btn btn-amber" style="margin:0;padding:12px" onclick="showCloseMonth()">📅 Cerrar mes y reiniciar</button>
     </div>
     <div class="settings-section">
-      <div class="settings-section-title" style="color:var(--danger)">⚠️ Zona de peligro</div>
+      <div class="settings-section-title" style="color:var(--danger)">⚠️Borra informes pasados</div>
       <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-sm)">
-        <div class="settings-item" onclick="showDeleteAll()" style="border:none"><span style="color:var(--danger);font-weight:600">Borrar todos los gastos</span><span style="color:var(--danger)">🗑️</span></div>
+        <div class="settings-item" onclick="showDeleteAll()" style="border:none"><span style="color:var(--danger);font-weight:600">Borrar Informes</span><span style="color:var(--danger)">🗑️</span></div>
       </div>
     </div>
     <div class="settings-section">
@@ -1233,6 +1260,7 @@ window.showCharts=function(){
       +(weeks.length?'<div class="dash-card"><div class="dash-card-title">Gasto por semana</div><div style="display:flex;align-items:flex-end;gap:7px;height:75px">'+weeks.map(([w,a])=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:var(--text2)">'+sym+a.toFixed(0)+'</div><div style="width:100%;background:linear-gradient(180deg,var(--accent),var(--purple2));border-radius:3px 3px 0 0;height:'+Math.max(5,(a/maxW*55)).toFixed(0)+'px"></div><div style="font-size:8px;color:var(--text2)">'+w+'</div></div>').join('')+'</div></div>':'')
       +'<div class="dash-card"><div class="dash-card-title">Desglose por categoría</div>'+cats.map(([cat,amt])=>{const col=CAT_COLORS[cat]||'#888';const icon=CAT_ICONS[cat]||'💰';const pct=(amt/tot*100).toFixed(1);return '<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px">'+icon+' '+cat+'</span><div><span style="font-size:12px;font-weight:800">'+sym+amt.toFixed(2)+'</span><span style="font-size:9px;color:var(--text2);margin-left:3px">'+pct+'%</span></div></div><div style="background:var(--bg3);border-radius:3px;height:6px;overflow:hidden"><div style="width:'+(amt/maxC*100).toFixed(0)+'%;height:100%;background:'+col+';border-radius:3px"></div></div></div>';}).join('')+'</div>'
       +'<div class="dash-card"><div class="dash-card-title">Top gastos</div>'+top5.map((e,i)=>{const col=CAT_COLORS[e.category]||'#888';const icon=CAT_ICONS[e.category]||'💰';const cur2=CURRENCIES[e.currency||'EUR']||getCurrency();const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;'+(i<top5.length-1?'border-bottom:1px solid var(--bg3)':'')+'"><div style="font-size:13px;font-weight:900;color:'+(i===0?'var(--amber)':'var(--text2)')+';min-width:20px;text-align:center">#'+(i+1)+'</div><div style="width:33px;height:33px;border-radius:9px;background:'+col+'18;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div><div style="font-size:9px;color:var(--text2)">'+ds+' &bull; '+e.category+'</div></div><div style="font-size:13px;font-weight:800;color:'+col+'">'+cur2.symbol+e.amount.toFixed(2)+'</div></div>';}).join('')+'</div>'
+      +'<div class="neon-title">DESCARGA Y COMPARTE TUS INFORMES DE DE MANERA PROFESIONAL</div>'
       +(Object.keys(groups).length>1?'<div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);margin:15px 0"></div>':'');
   }).join('');
   document.getElementById('dashboard-body').innerHTML=sections
