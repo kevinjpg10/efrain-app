@@ -1272,82 +1272,48 @@ window.showCharts=function(){
   showScreen('screen-dashboard');
 };
 
-// ── EXCEL (Versión Final Blindada para iPhone) ──
 window.exportExcel = async function() {
     if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
-    showToast('⏳ Preparando Excel...');
+    
+    // ... (tu lógica de fotos y grupos permanece igual)
 
-    let photoUrl = "";
-    try {
-        if (expenses.some(e => e.photo)) {
-            photoUrl = await uploadAndGetPhotoUrl();
-        }
-    } catch (err) {
-        console.error("Error obteniendo photoUrl:", err);
-        photoUrl = "";
-    }
-
-    const month = monthLabel();
     const wb = XLSX.utils.book_new();
-    const groups = {};
 
-    expenses.forEach(e => {
-        const cur = e.currency || 'EUR';
-        if (!groups[cur]) groups[cur] = [];
-        groups[cur].push(e);
-    });
-
+    // 1. GENERACIÓN DE LAS HOJAS DE DATOS (Lo que ya tienes)
     Object.entries(groups).forEach(([code, exps]) => {
-        const c = CURRENCIES[code] || CURRENCIES.EUR;
-        const sym = c.symbol;
-        const amtCol = 'Importe (' + sym + ')';
-        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
-
-        const rows = sorted.map(e => ({
-            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
-            Establecimiento: e.name || "",
-            Categoría: e.category || "",
-            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-            [amtCol]: e.amount,
-            Notas: e.notes || ''
-        }));
-
-        const tot = exps.reduce((s, e) => s + e.amount, 0);
-        const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
-        const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
-
-        rows.push({});
-        rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
-        rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
-        rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
-
-        if (photoUrl) {
-            const shortPhotoUrl = currentUser
-                ? ('https://mis-gastos-pro-eedcf.web.app/fotos?uid=' + encodeURIComponent(currentUser.uid))
-                : 'https://mis-gastos-pro-eedcf.web.app/fotos';
-
-            rows.push({});
-            rows.push({
-                Fecha: '📷 VER FOTOS DEL INFORME',
-                Establecimiento: shortPhotoUrl
-            });
-        }
-
-        const ws = XLSX.utils.json_to_sheet(rows);
-
-        ws['!cols'] = [
-            {wch:24}, {wch:72}, {wch:15}, {wch:15}, {wch:12}, {wch:20}
-        ];
+        // ... (tu código actual de 'rows' y 'XLSX.utils.json_to_sheet')
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
+    // 2. INTEGRACIÓN DE LA PESTAÑA RESUMEN (Nueva lógica)
+    // Calculamos los totales por categoría para el resumen
+    const categoryTotals = {};
+    expenses.forEach(e => {
+        categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
+    });
+
+    // Convertimos a formato de tabla para Excel
+    const summaryData = Object.entries(categoryTotals).map(([cat, amt]) => ({
+        'Categoría': cat,
+        'Total': amt
+    }));
+
+    // Añadimos la hoja al libro
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+    
+    // Ajuste de columnas para que se vea bien
+    wsSummary['!cols'] = [{wch: 25}, {wch: 15}];
+    
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen Visual');
+
+    // 3. DESCARGA
     try {
         const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
         XLSX.writeFile(wb, fileName);
-        showToast('📊 Excel generado ✓');
+        showToast('📊 Excel con Resumen generado ✓');
     } catch (e) {
-        console.error("Error al descargar el archivo:", e);
-        showToast('❌ Error al guardar el archivo');
+        console.error("Error:", e);
+        showToast('❌ Error al generar');
     }
 };
 
