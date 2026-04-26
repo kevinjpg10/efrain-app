@@ -1297,29 +1297,67 @@ window.exportExcel = async function() {
         groups[cur].push(e);
     });
 
+    // ── HOJA RESUMEN POR CATEGORÍA ──
+    const resumenCategorias = {};
+
+    expenses.forEach(e => {
+        const cat = e.category || 'Sin categoría';
+        const amount = Number(e.amount) || 0;
+
+        if (!resumenCategorias[cat]) resumenCategorias[cat] = 0;
+        resumenCategorias[cat] += amount;
+    });
+
+    const resumenRows = Object.entries(resumenCategorias)
+        .sort((a, b) => a[0].localeCompare(b[0], 'es'))
+        .map(([categoria, total]) => ({
+            Categoría: categoria,
+            Total: Number(total.toFixed(2))
+        }));
+
+    const wsResumen = XLSX.utils.json_to_sheet(resumenRows);
+
+    wsResumen['!cols'] = [
+        { wch: 24 },
+        { wch: 14 }
+    ];
+
+    // Formato numérico con 2 decimales
+    for (let i = 2; i <= resumenRows.length + 1; i++) {
+        const cell = wsResumen[`B${i}`];
+        if (cell) cell.z = '0.00';
+    }
+
+    XLSX.utils.book_append_sheet(wb, wsResumen, 'Resumen');
+
+    // ── HOJAS POR MONEDA ──
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
         const amtCol = 'Importe (' + sym + ')';
-        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+        const sorted = exps.slice().sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
         const rows = sorted.map(e => ({
             Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
             Establecimiento: e.name || "",
             Categoría: e.category || "",
             'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
-            [amtCol]: e.amount,
+            [amtCol]: Number(e.amount) || 0,
             Notas: e.notes || ''
         }));
 
-        const tot = exps.reduce((s, e) => s + e.amount, 0);
-        const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
-        const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
+        const tot = exps.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+        const tar = exps
+            .filter(e => e.payment === 'tarjeta')
+            .reduce((s, e) => s + (Number(e.amount) || 0), 0);
+        const efe = exps
+            .filter(e => e.payment === 'efectivo')
+            .reduce((s, e) => s + (Number(e.amount) || 0), 0);
 
         rows.push({});
-        rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
-        rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
-        rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
+        rows.push({ Fecha: 'TOTAL', [amtCol]: Number(tot.toFixed(2)) });
+        rows.push({ Fecha: 'Tarjeta', [amtCol]: Number(tar.toFixed(2)) });
+        rows.push({ Fecha: 'Efectivo', [amtCol]: Number(efe.toFixed(2)) });
 
         if (photoUrl) {
             const shortPhotoUrl = currentUser
@@ -1336,8 +1374,14 @@ window.exportExcel = async function() {
         const ws = XLSX.utils.json_to_sheet(rows);
 
         ws['!cols'] = [
-            {wch:24}, {wch:72}, {wch:15}, {wch:15}, {wch:12}, {wch:20}
+            { wch: 24 },
+            { wch: 72 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 12 },
+            { wch: 20 }
         ];
+
         XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
     });
 
