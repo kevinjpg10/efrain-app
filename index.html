@@ -1410,7 +1410,7 @@ window.exportPDF=async function(){
     doc.setFillColor(...BG);doc.rect(0,0,W,297,'F');doc.setFillColor(20,20,35);doc.rect(0,0,W,50,'F');doc.setFillColor(...ACC);doc.rect(0,0,5,50,'F');
     doc.setTextColor(245,245,247);doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text('Mis Gastos Pro',13,19);
     doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(140,140,160);
-    doc.text('Informe — '+month,13,27);doc.text(c.code === 'EUR' ? 'ES' : c.flag + ' ' + c.name + ' (' + sym + ')', 13, 34);doc.text('Generado: '+new Date().toLocaleDateString('es-ES'),13,41);
+    doc.text('Informe — '+month,13,27);doc.text(code === 'EUR' ? 'ES' : c.flag + ' ' + c.name + ' (' + sym + ')', 13, 34);doc.text('Generado: '+new Date().toLocaleDateString('es-ES'),13,41);
     [[tot,'Total',[79,142,247]],[tar,'Tarjeta',[168,85,247]],[efe,'Efectivo',[34,197,94]]].forEach(([v,l,cl],i)=>{
       const x=14+i*65,y=55;doc.setFillColor(...BG2);doc.roundedRect(x,y,60,21,3,3,'F');doc.setFillColor(...cl);doc.roundedRect(x,y,60,3,2,2,'F');
       doc.setTextColor(120,120,140);doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.text(l.toUpperCase(),x+30,y+8,'center');
