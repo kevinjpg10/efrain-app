@@ -1273,47 +1273,58 @@ window.showCharts=function(){
 };
 
 window.exportExcel = async function() {
-    if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
-    
-    // ... (tu lógica de fotos y grupos permanece igual)
+    // 1. Validación inicial
+    if (!expenses || expenses.length === 0) { 
+        showToast('No hay gastos para exportar'); 
+        return; 
+    }
 
-    const wb = XLSX.utils.book_new();
-
-    // 1. GENERACIÓN DE LAS HOJAS DE DATOS (Lo que ya tienes)
-    Object.entries(groups).forEach(([code, exps]) => {
-        // ... (tu código actual de 'rows' y 'XLSX.utils.json_to_sheet')
-        XLSX.utils.book_append_sheet(wb, ws, code + ' ' + sym);
-    });
-
-    // 2. INTEGRACIÓN DE LA PESTAÑA RESUMEN (Nueva lógica)
-    // Calculamos los totales por categoría para el resumen
-    const categoryTotals = {};
-    expenses.forEach(e => {
-        categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
-    });
-
-    // Convertimos a formato de tabla para Excel
-    const summaryData = Object.entries(categoryTotals).map(([cat, amt]) => ({
-        'Categoría': cat,
-        'Total': amt
-    }));
-
-    // Añadimos la hoja al libro
-    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
-    
-    // Ajuste de columnas para que se vea bien
-    wsSummary['!cols'] = [{wch: 25}, {wch: 15}];
-    
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen Visual');
-
-    // 3. DESCARGA
     try {
-        const fileName = `Gastos_${month.replace(/\s+/g, '_')}.xlsx`;
+        showToast('⏳ Generando Excel...');
+
+        // 2. Crear el libro
+        const wb = XLSX.utils.book_new();
+
+        // 3. Preparar los datos de la hoja de DETALLE
+        const detailRows = expenses.map(e => ({
+            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : '',
+            Establecimiento: e.name || '',
+            Categoría: e.category || '',
+            'Método': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+            Importe: parseFloat(e.amount) || 0,
+            Notas: e.notes || ''
+        }));
+
+        const wsDetail = XLSX.utils.json_to_sheet(detailRows);
+        // Ajustar anchos de columna para que se lea bien en iPhone
+        wsDetail['!cols'] = [{wch: 12}, {wch: 30}, {wch: 15}, {wch: 10}, {wch: 12}, {wch: 20}];
+        XLSX.utils.book_append_sheet(wb, wsDetail, "Detalle");
+
+        // 4. Crear la PESTAÑA RESUMEN (La parte profesional)
+        // Calculamos los totales agrupados por categoría
+        const categoryTotals = {};
+        expenses.forEach(e => {
+            const cat = e.category || 'Sin categoría';
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + (parseFloat(e.amount) || 0);
+        });
+
+        const summaryData = Object.entries(categoryTotals).map(([cat, total]) => ({
+            'Categoría': cat,
+            'Total': total.toFixed(2) // Formato con 2 decimales
+        }));
+
+        const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+        wsSummary['!cols'] = [{wch: 20}, {wch: 15}];
+        XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen");
+
+        // 5. Descarga segura
+        const fileName = "Mis_Gastos_Pro.xlsx";
         XLSX.writeFile(wb, fileName);
-        showToast('📊 Excel con Resumen generado ✓');
+        
+        showToast('✅ Excel profesional generado');
     } catch (e) {
-        console.error("Error:", e);
-        showToast('❌ Error al generar');
+        console.error("Error al generar Excel:", e);
+        showToast('❌ Error: ' + e.message);
     }
 };
 
