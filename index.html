@@ -1310,39 +1310,98 @@ window.showCharts=function(){
   showScreen('screen-dashboard');
 };
 
- // ── Descarga compatible con iPhone + Android + PC ──
-  // XLSX.writeFile usa document.createElement('a') internamente pero falla en iOS Safari
-  // La forma correcta es: write() → ArrayBuffer → Blob → URL.createObjectURL → click
+// ── EXCEL (Versión Final Blindada para iPhone) ──
+window.exportExcel = async function() {
+    if (!expenses.length) { showToast('No hay gastos para exportar'); return; }
+    showToast('⏳ Preparando Excel...');
 
-  try {
-    const xlsxData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob     = new Blob(
-      [xlsxData],
-      { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
-    );
-    const blobUrl  = URL.createObjectURL(blob);
-    const fileName = 'Gastos_' + month.replace(/\s+/g, '_') + '.xlsx';
- 
-    // Crear enlace invisible y hacer click (funciona en iOS Safari, Android Chrome, PC)
-    const a = document.createElement('a');
-    a.href     = blobUrl;
-    a.download = fileName;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
- 
-    // Limpiar después de la descarga
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    }, 3000);
- 
-    showToast(photoUrl ? '📊 Excel con link de fotos descargado ✓' : '📊 Excel descargado ✓');
-  } catch (err) {
-    console.error('Error descargando Excel:', err);
-    showToast('❌ Error al generar el archivo');
-  }
+    let photoUrl = "";
+    try {
+        if (expenses.some(e => e.photo)) {
+            photoUrl = await uploadAndGetPhotoUrl();
+        }
+    } catch (err) {
+        console.error("Error obteniendo photoUrl:", err);
+        photoUrl = "";
+    }
+
+    const month = monthLabel();
+    const wb = XLSX.utils.book_new();
+    const groups = {};
+
+    expenses.forEach(e => {
+        const cur = e.currency || 'EUR';
+        if (!groups[cur]) groups[cur] = [];
+        groups[cur].push(e);
+    });
+
+    Object.entries(groups).forEach(([code, exps]) => {
+        const c = CURRENCIES[code] || CURRENCIES.EUR;
+        const sym = c.symbol;
+        const amtCol = 'Importe (' + sym + ')';
+        const sorted = exps.slice().sort((a,b) => new Date(a.date||0) - new Date(b.date||0));
+
+        const rows = sorted.map(e => ({
+            Fecha: e.date ? new Date(e.date + 'T12:00:00').toLocaleDateString('es-ES') : 'Sin fecha',
+            Establecimiento: e.name || "",
+            Categoría: e.category || "",
+            'Método de pago': e.payment === 'tarjeta' ? 'Tarjeta' : 'Efectivo',
+            [amtCol]: e.amount,
+            Notas: e.notes || ''
+        }));
+
+        const tot = exps.reduce((s, e) => s + e.amount, 0);
+        const tar = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
+        const efe = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
+
+        rows.push({});
+        rows.push({ Fecha: 'TOTAL', [amtCol]: tot });
+        rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
+        rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
+
+        if (photoUrl) {
+            const shortPhotoUrl = currentUser
+                ? ('https://mis-gastos-pro-eedcf.web.app/fotos?uid=' + encodeURIComponent(currentUser.uid))
+                : 'https://mis-gastos-pro-eedcf.web.app/fotos';
+
+            rows.push({});
+            rows.push({
+                Fecha: '📷 VER FOTOS DEL INFORME',
+                Establecimiento: shortPhotoUrl
+            });
+        }
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+
+        ws['!cols'] = [{wch:14},{wch:30},{wch:13},{wch:14},{wch:13},{wch:22},{wch:16}];
+        // Real hyperlink in col G (OOXML .l property — works in Excel/iOS/Android)
+        if (photoUrl) {
+            sorted.forEach((_, rowIdx) => {
+                const cellAddr = XLSX.utils.encode_cell({ r: rowIdx + 1, c: 6 });
+                if (!ws[cellAddr]) ws[cellAddr] = { t: 's', v: 'VER FOTOS' };
+                ws[cellAddr].l = { Target: photoUrl, Tooltip: 'Abrir informe de fotos' };
+            });
+        }
+        XLSX.utils.book_append_sheet(wb, ws, (code + ' ' + sym).substring(0, 31));
+    });
+
+    // ── Descarga compatible iPhone + Android + PC ──
+    try {
+        const xlsxData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob     = new Blob([xlsxData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const blobUrl  = URL.createObjectURL(blob);
+        const fileName = 'Gastos_' + month.replace(/\s+/g, '_') + '.xlsx';
+        const a = document.createElement('a');
+        a.href = blobUrl; a.download = fileName; a.style.display = 'none';
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 3000);
+        showToast(photoUrl ? '📊 Excel con link de fotos ✓' : '📊 Excel descargado ✓');
+    } catch (e) {
+        console.error('Error descargando Excel:', e);
+        showToast('❌ Error al generar el archivo');
+    }
 };
+
 
 // ── PDF (todos los usuarios pueden exportar) ──
 window.exportPDF=async function(){
