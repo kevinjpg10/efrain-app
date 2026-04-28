@@ -1288,16 +1288,35 @@ async function cleanupMonth(){
   document.getElementById('close-step2').style.display='none';
   document.getElementById('close-step3').style.display='block';
 }
-  async function gestionarSuscripcion() {
-  const res = await fetch("/api/stripe-portal", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ customerId: currentUser.stripeCustomerId }),
-  });
-  const data = await res.json();
-  window.location.href = data.url;
-}
 
+// Pega esto en tu archivo JS principal (donde está showCharts)
+window.gestionarSuscripcion = async function() {
+  const customerId = currentUser.stripeCustomerId;
+  
+  if (!customerId) {
+    alert("Error: No se encontró un ID de cliente.");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/stripe-portal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ customerId: customerId }),
+    });
+    
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      alert("Error al obtener la URL del portal.");
+    }
+  } catch (err) {
+    console.error("Error:", err);
+    alert("Error de conexión.");
+  }
+};
+  
 // ── DASHBOARD ──
 window.showCharts=function(){
   document.getElementById('dash-month-label').textContent=monthLabel();
