@@ -1288,6 +1288,15 @@ async function cleanupMonth(){
   document.getElementById('close-step2').style.display='none';
   document.getElementById('close-step3').style.display='block';
 }
+  async function gestionarSuscripcion() {
+  const res = await fetch("/api/stripe-portal", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ customerId: currentUser.stripeCustomerId }),
+  });
+  const data = await res.json();
+  window.location.href = data.url;
+}
 
 // ── DASHBOARD ──
 window.showCharts=function(){
@@ -1326,6 +1335,10 @@ window.showCharts=function(){
     +'<button class="btn btn-green" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportExcel()">📊 Excel</button>'
     +'<button class="btn btn-danger" style="flex:1;margin:0;padding:11px;font-size:13px" onclick="exportPDF()">📄 PDF</button>'
     +'<button class="btn btn-ghost" style="flex:1;margin:0;padding:11px;font-size:12px;color:var(--accent);border-color:rgba(79,142,247,.3)" onclick="viewPhotoReport()">📷 Fotos</button>'
+    +'</div>'
+  +'<div style="margin-top:10px;text-align:center">'
+    +'<div style="font-size:11px;color:var(--text2);margin-bottom:5px">Gestionar Suscripción</div>'
+    +'<button class="btn btn-ghost" style="width:100%;padding:11px;font-size:12px;color:var(--accent);border-color:rgba(79,142,247,.3)" onclick="gestionarSuscripcion()">💳 Gestiona tu Suscripcion</button>'
     +'</div>';
   showScreen('screen-dashboard');
 };
