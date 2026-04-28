@@ -1386,6 +1386,31 @@ Object.entries(groups).forEach(([code, exps]) => {
     });
 
     resumenRows.push({});
+
+    // ── CATEGORÍAS ──
+    const categorias = {};
+
+    exps.forEach(e => {
+        const cat = e.category || 'Sin categoría';
+        if (!categorias[cat]) categorias[cat] = 0;
+        categorias[cat] += e.amount;
+    });
+
+    resumenRows.push({
+        Concepto: 'Categorías (' + code + ')',
+        Valor: ''
+    });
+
+    Object.entries(categorias)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([cat, val]) => {
+            resumenRows.push({
+                Concepto: ' - ' + cat,
+                Valor: val
+            });
+        });
+
+    resumenRows.push({});
 });
 
 const resumenWs = XLSX.utils.json_to_sheet(resumenRows);
