@@ -1335,6 +1335,67 @@ window.exportExcel = async function() {
         groups[cur].push(e);
     });
 
+
+// ── HOJA RESUMEN ──
+const resumenRows = [];
+
+resumenRows.push({
+    Concepto: 'Mes',
+    Valor: month
+});
+
+resumenRows.push({
+    Concepto: 'Total de gastos',
+    Valor: expenses.length
+});
+
+resumenRows.push({});
+
+Object.entries(groups).forEach(([code, exps]) => {
+    const c = CURRENCIES[code] || CURRENCIES.EUR;
+    const sym = c.symbol;
+
+    const total = exps.reduce((s, e) => s + e.amount, 0);
+    const tarjeta = exps.filter(e => e.payment === 'tarjeta').reduce((s, e) => s + e.amount, 0);
+    const efectivo = exps.filter(e => e.payment === 'efectivo').reduce((s, e) => s + e.amount, 0);
+    const fotos = exps.filter(e => e.photo).length;
+
+    resumenRows.push({
+        Concepto: 'Moneda',
+        Valor: code + ' ' + sym
+    });
+
+    resumenRows.push({
+        Concepto: 'Total',
+        Valor: total
+    });
+
+    resumenRows.push({
+        Concepto: 'Tarjeta',
+        Valor: tarjeta
+    });
+
+    resumenRows.push({
+        Concepto: 'Efectivo',
+        Valor: efectivo
+    });
+
+    resumenRows.push({
+        Concepto: 'Fotos de tickets',
+        Valor: fotos
+    });
+
+    resumenRows.push({});
+});
+
+const resumenWs = XLSX.utils.json_to_sheet(resumenRows);
+resumenWs['!cols'] = [{ wch: 24 }, { wch: 22 }];
+XLSX.utils.book_append_sheet(wb, resumenWs, 'Resumen');
+
+
+
+  
+
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
         const sym = c.symbol;
