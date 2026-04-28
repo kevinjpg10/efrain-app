@@ -1414,12 +1414,15 @@ Object.entries(groups).forEach(([code, exps]) => {
 });
 
 const resumenWs = XLSX.utils.json_to_sheet(resumenRows);
-resumenWs['!cols'] = [{ wch: 24 }, { wch: 22 }];
+resumenWs['!cols'] = [{ wch: 28 }, { wch: 22 }];
 XLSX.utils.book_append_sheet(wb, resumenWs, 'Resumen');
 
 
 
-  
+
+
+
+
 
     Object.entries(groups).forEach(([code, exps]) => {
         const c = CURRENCIES[code] || CURRENCIES.EUR;
@@ -1487,6 +1490,7 @@ XLSX.utils.book_append_sheet(wb, resumenWs, 'Resumen');
         showToast('❌ Error al generar el archivo');
     }
 };
+
 
 
 // ── PDF (todos los usuarios pueden exportar) ──
