@@ -1313,6 +1313,7 @@ window.showCharts=function(){
  // ── Descarga compatible con iPhone + Android + PC ──
   // XLSX.writeFile usa document.createElement('a') internamente pero falla en iOS Safari
   // La forma correcta es: write() → ArrayBuffer → Blob → URL.createObjectURL → click
+
   try {
     const xlsxData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob     = new Blob(
