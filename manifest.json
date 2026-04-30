@@ -4,7 +4,7 @@
   "start_url": "/efrain-app/index.html",
   "scope": "/efrain-app/",
   "display": "standalone",
-  "background_color": "#0a0a0f",
+  "background_color": "#ffffff",
   "theme_color": "#4f8ef7",
   "icons": [
     {
