@@ -953,17 +953,49 @@ window.switchAuthTab=function(tab){
 };
 
 window.doAuth = async function() {
-  // ... todo el código de login que ya tenemos con la persistencia ...
-  // ...
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  const isLogin = document.getElementById('auth-btn').textContent.includes('sesión');
+  const errEl = document.getElementById('auth-error');
+  errEl.classList.remove('show');
+
+  if (!email || !pass) { 
+    errEl.textContent = 'Rellena email y contraseña'; 
+    errEl.classList.add('show'); 
+    return; 
+  }
+
+  document.getElementById('auth-btn').textContent = '⏳ Cargando...';
+
   try {
     await setPersistence(auth, browserLocalPersistence);
-    // ... resto de tu lógica
-  } catch(e) {
-    // ... manejo de errores
-  }
-}; // <--- AQUÍ TERMINA TU FUNCIÓN
 
-// JUSTO AQUÍ DEBAJO PEGAS LO DEL OJO:
+    if (isLogin) {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const bName = document.getElementById('auth-business-name').value.trim() || 'Mis Gastos Pro';
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        email,
+        appName: bName,
+        isAdmin: false,
+        isPremium: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+  } catch (e) {
+    const msgs = {
+      'auth/user-not-found': 'Usuario no encontrado',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/invalid-credential': 'Email o contraseña incorrectos'
+    };
+    errEl.textContent = msgs[e.code] || e.message;
+    errEl.classList.add('show');
+    document.getElementById('auth-btn').textContent = isLogin ? 'Iniciar sesión' : 'Crear cuenta';
+  }
+};
+
+// Lógica del ojo (va fuera de la función doAuth)
 document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'toggle-password') {
         const passInput = document.getElementById('auth-pass');
@@ -976,19 +1008,6 @@ document.addEventListener('click', function(e) {
         }
     }
 });
-  
-  
-  const email = document.getElementById('auth-email').value.trim();
-  const pass = document.getElementById('auth-pass').value;
-  const isLogin = document.getElementById('auth-btn').textContent.includes('sesión');
-  const errEl = document.getElementById('auth-error');
-  errEl.classList.remove('show');
-
-  if (!email || !pass) { 
-    errEl.textContent = 'Rellena email y contraseña'; 
-    errEl.classList.add('show'); 
-    return; 
-  }
 
   document.getElementById('auth-btn').textContent = '⏳ Cargando...';
 
