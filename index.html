@@ -1683,6 +1683,33 @@ window.adminTogglePremium=async function(){
     if(currentUser&&currentUser.uid===u.uid)await loadUserProfile();
   }catch(e){showToast('❌ '+e.message);}
 };
+
+// ── SWIPE ──
+let swipeStartX = 0;
+let swipeStartY = 0;
+
+document.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  swipeStartX = t.screenX;
+  swipeStartY = t.screenY;
+}, {passive:true});
+
+document.addEventListener('touchend', e => {
+  const t = e.changedTouches[0];
+  const diffX = t.screenX - swipeStartX;
+  const diffY = t.screenY - swipeStartY;
+
+  if (Math.abs(diffY) > 100) return;
+
+  if (diffX < -80) {
+    console.log('Swipe izquierda');
+  }
+
+  if (diffX > 80) {
+    console.log('Swipe derecha');
+  }
+}, {passive:true});
+  
 </script>
 </body>
 </html>
