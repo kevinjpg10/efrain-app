@@ -944,14 +944,6 @@ window.saveAndDistributeKey=async function(){
 };
 
 // ── AUTH ──
-window.switchAuthTab=function(tab){
-  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
-  document.getElementById('auth-btn').textContent=tab==='login'?'Iniciar sesión':'Crear cuenta';
-  document.getElementById('auth-name-group').style.display=tab==='register'?'block':'none';
-  document.getElementById('forgot-wrap').style.display=tab==='login'?'block':'none';
-  document.getElementById('auth-error').classList.remove('show');
-};
-
 window.doAuth = async function() {
   const email = document.getElementById('auth-email').value.trim();
   const pass = document.getElementById('auth-pass').value;
@@ -995,7 +987,6 @@ window.doAuth = async function() {
   }
 };
 
-// Lógica del ojo (va fuera de la función doAuth)
 document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'toggle-password') {
         const passInput = document.getElementById('auth-pass');
