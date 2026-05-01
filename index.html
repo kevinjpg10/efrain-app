@@ -225,12 +225,8 @@ select.form-input option{background:var(--bg2)}
       </div>
       <div class="form-group">
         <label class="form-label">Contraseña</label>
-        
-       <div style="position:relative">
-  <input class="form-input" id="auth-pass" type="password" placeholder="••••••••" autocomplete="current-password" style="padding-right:48px">
-  <button type="button" onclick="togglePassword()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:none;border-radius:10px;background:var(--bg4);color:var(--text2);font-size:16px;cursor:pointer">👁️</button>
-</div>
-      
+        <input class="form-input" id="auth-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
       <div class="form-group" id="auth-name-group" style="display:none">
         <label class="form-label">Nombre de tu negocio</label>
         <input class="form-input" id="auth-business-name" type="text" placeholder="Mi App de Gastos">
@@ -950,18 +946,6 @@ window.switchAuthTab=function(tab){
   document.getElementById('forgot-wrap').style.display=tab==='login'?'block':'none';
   document.getElementById('auth-error').classList.remove('show');
 };
-
-window.togglePassword=function(){
-  const input=document.getElementById('auth-pass');
-  const btn=event.currentTarget;
-  const visible=input.type==='text';
-  input.type=visible?'password':'text';
-  btn.textContent=visible?'👁️':'🙈';
-};
-
-
-
-  
 
 window.doAuth=async function(){
   const email=document.getElementById('auth-email').value.trim();
