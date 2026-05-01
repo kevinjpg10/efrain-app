@@ -581,14 +581,14 @@ select.form-input option{background:var(--bg2)}
 
 <script>
 // iOS install hint
-window.addEventListener('load',function(){
+window.addEventListener('load',(){
   if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.navigator.standalone&&!localStorage.getItem('ios_hint')){
-    setTimeout(function(){
+    setTimeout((){
       var h=document.createElement('div');
       h.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1c1c1f;color:#f5f5f7;padding:13px 16px;border-radius:13px;font-size:12px;z-index:999;box-shadow:0 4px 18px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);max-width:290px;text-align:center;line-height:1.5';
       h.innerHTML='📲 Para instalar: pulsa <strong>Compartir ↑</strong> → <strong>Añadir a inicio</strong><br><span style="color:#8e8ea0;font-size:10px">Toca para cerrar</span>';
-      h.onclick=function(){h.remove();};document.body.appendChild(h);
-      setTimeout(function(){h.remove();},8000);
+      h.onclick=(){h.remove();};document.body.appendChild(h);
+      setTimeout((){h.remove();},8000);
       localStorage.setItem('ios_hint','1');
     },3000);
   }
@@ -597,7 +597,13 @@ window.addEventListener('load',function(){
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  setPersistence, 
+  browserLocalPersistence 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, setDoc, getDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getStorage, ref, uploadString, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
@@ -644,12 +650,12 @@ let allAdminUsers=[], adminSelectedUser=null;
 
 
 // ── STORAGE ──
-function storageUrl(uid){
+ storageUrl(uid){
   return 'https://firebasestorage.googleapis.com/v0/b/'+BUCKET+'/o/'+
     encodeURIComponent('usuarios/'+uid+'/Fotos_tickets.html')+'?alt=media';
 }
 
-function buildPhotoReportHTML(){
+ buildPhotoReportHTML(){
   const month=monthLabel();
   const withPhoto=expenses.filter(e=>e.photo).length;
   const cards=expenses.slice()
@@ -678,7 +684,7 @@ function buildPhotoReportHTML(){
     +'<div class="g">'+cards+'</div></body></html>';
 }
 
-async function uploadPhotoReport(){
+async  uploadPhotoReport(){
   if(!currentUser)return null;
   try{
     const html=buildPhotoReportHTML();
@@ -689,7 +695,7 @@ async function uploadPhotoReport(){
   }catch(e){console.error('Storage upload:',e.code,e.message);return null;}
 }
 
-async function uploadAndGetPhotoUrl(){
+async  uploadAndGetPhotoUrl(){
   if(!currentUser)return '';
   const fileRef=await uploadPhotoReport();
   if(!fileRef) return '';
@@ -701,7 +707,7 @@ async function uploadAndGetPhotoUrl(){
   }
 }
 
-window.viewPhotoReport=async function(){
+window.viewPhotoReport=async (){
   if(!currentUser){showToast('Inicia sesión primero');return;}
   try{
     showToast('⏳ Preparando informe...');
@@ -714,7 +720,7 @@ window.viewPhotoReport=async function(){
   }
 };
 
-window.downloadPhotoReport=function(){
+window.downloadPhotoReport=(){
   if(!expenses.length){showToast('No hay gastos este mes');return;}
   const fileName='Fotos_tickets_'+monthLabel().replace(/\s+/g,'_')+'.html';
   const blob=new Blob([buildPhotoReportHTML()],{type:'text/html;charset=utf-8'});
@@ -736,27 +742,27 @@ window.downloadPhotoReport=function(){
 };
 
 // ── HELPERS ──
-function showToast(m){
+ showToast(m){
   const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
 }
-function monthLabel(){const d=new Date();return MONTHS[d.getMonth()]+' '+d.getFullYear();}
-function fullDateLabel(){const d=new Date();const days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];return days[d.getDay()]+' '+d.getDate()+' de '+MONTHS[d.getMonth()];}
-function getCurrency(){return CURRENCIES[localStorage.getItem('currency')||'EUR']||CURRENCIES.EUR;}
-function saveCurrency(code){localStorage.setItem('currency',code);render();showToast(CURRENCIES[code].flag+' '+CURRENCIES[code].name);}
+ monthLabel(){const d=new Date();return MONTHS[d.getMonth()]+' '+d.getFullYear();}
+ fullDateLabel(){const d=new Date();const days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];return days[d.getDay()]+' '+d.getDate()+' de '+MONTHS[d.getMonth()];}
+ getCurrency(){return CURRENCIES[localStorage.getItem('currency')||'EUR']||CURRENCIES.EUR;}
+ saveCurrency(code){localStorage.setItem('currency',code);render();showToast(CURRENCIES[code].flag+' '+CURRENCIES[code].name);}
 window.saveCurrency=saveCurrency;
 
-function openStripePago(){
+ openStripePago(){
   window.open('https://buy.stripe.com/test_28EeVc9f342IeAt1xQ6sw00','_blank','noopener,noreferrer');
 }
 window.openStripePago=openStripePago;
 
-function openStripeSuscripcion(){
+ openStripeSuscripcion(){
   window.open('https://buy.stripe.com/test_9B66oGdvjfLq0JDb8q6sw01','_blank','noopener,noreferrer');
 }
 window.openStripeSuscripcion=openStripeSuscripcion;
 
-function openWhatsAppPremium(){
+ openWhatsAppPremium(){
   const email=currentUser?currentUser.email:'desconocido';
   const msg=encodeURIComponent('Hola, quiero pagar por Bizum para activar el Plan Premium de Mis Gastos Pro. Mi correo es: '+email);
   window.open('https://wa.me/'+WHATSAPP_NUM+'?text='+msg,'_blank');
@@ -765,7 +771,7 @@ function openWhatsAppPremium(){
 window.openWhatsAppPremium=openWhatsAppPremium;
 
 // ── APP NAME ──
-function updateAppName(val){
+ updateAppName(val){
   const name=val.trim()||'Mis Gastos Pro';
   const el=document.getElementById('app-name-display');if(el)el.textContent=name;
   document.title=name;
@@ -773,7 +779,7 @@ function updateAppName(val){
 }
 window.updateAppName=updateAppName;
 
-async function saveAppNameToFirestore(){
+async  saveAppNameToFirestore(){
   if(!currentUser)return;
   const val=document.getElementById('app-name-input').value.trim();
   try{await setDoc(doc(db,'users',currentUser.uid),{appName:val||'Mis Gastos Pro'},{merge:true});updateAppName(val);showToast('✅ Nombre guardado');}
@@ -781,20 +787,20 @@ async function saveAppNameToFirestore(){
 }
 window.saveAppNameToFirestore=saveAppNameToFirestore;
 
-function parseAppDate(v){
+ parseAppDate(v){
   if(!v)return null;
   try{
-    if(typeof v.toDate==='function')return v.toDate();
+    if(typeof v.toDate==='')return v.toDate();
     if(typeof v==='object'&&typeof v.seconds==='number')return new Date(v.seconds*1000);
     const d=new Date(v);
     return isNaN(d.getTime())?null:d;
   }catch(_){return null;}
 }
-function formatPremiumDate(v){
+ formatPremiumDate(v){
   const d=parseAppDate(v);
   return d?d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'}):'—';
 }
-function getPremiumStatus(v){
+ getPremiumStatus(v){
   const d=parseAppDate(v);
   if(!d)return null;
   const now=new Date();
@@ -803,14 +809,14 @@ function getPremiumStatus(v){
   const daysLeft=Math.ceil(diffMs/msDay);
   return {date:d,daysLeft,isExpired:diffMs<0,isWarning:diffMs>=0&&daysLeft<=7};
 }
-function premiumStatusText(v,withPrefix=true){
+ premiumStatusText(v,withPrefix=true){
   const st=getPremiumStatus(v);
   if(!st)return '';
   if(st.isExpired)return '🔴 Vencido';
   if(st.isWarning)return '🔴 Vence en '+st.daysLeft+' día'+(st.daysLeft===1?'':'s');
   return (withPrefix?'⏰ Faltan ':'')+st.daysLeft+' día'+(st.daysLeft===1?'':'s');
 }
-function getPremiumBadgeInfo(v){
+ getPremiumBadgeInfo(v){
   const st=getPremiumStatus(v);
   if(!st)return {text:'',color:'var(--text2)'};
   if(st.isExpired)return {text:'🔴 Vencido',color:'var(--danger)'};
@@ -818,7 +824,7 @@ function getPremiumBadgeInfo(v){
   return {text:'⏰ Faltan '+st.daysLeft+' día'+(st.daysLeft===1?'':'s'),color:'var(--text2)'};
 }
 
-async function deliverGeneratedFile(fileName, blob, opts={}){
+async  deliverGeneratedFile(fileName, blob, opts={}){
   const {openInBrowser=false}=opts;
   const file=new File([blob],fileName,{type:blob.type||'application/octet-stream'});
   const url=URL.createObjectURL(blob);
@@ -848,7 +854,7 @@ async function deliverGeneratedFile(fileName, blob, opts={}){
 }
 
 // ── PREMIUM UI ──
-function updatePremiumUI(){
+ updatePremiumUI(){
   const premiumInfo=getPremiumStatus(premiumHasta);
   const premiumActive=!!(isPremium&&premiumInfo&&!premiumInfo.isExpired);
   const atLimit=!premiumActive&&expenses.length>=FREE_LIMIT;
@@ -893,7 +899,7 @@ function updatePremiumUI(){
 }
 
 // ── LOAD USER PROFILE ──
-async function loadUserProfile(){
+async  loadUserProfile(){
   if(!currentUser)return;
   try{
     const ref_=doc(db,'users',currentUser.uid);
@@ -924,7 +930,7 @@ async function loadUserProfile(){
 }
 
 // ── SAVE & DISTRIBUTE KEY ──
-window.saveAndDistributeKey=async function(){
+window.saveAndDistributeKey=async (){
   if(!isAdmin){showToast('Solo admin');return;}
   const val=document.getElementById('apikey-input').value.trim();
   if(!val){showToast('Escribe la API key');return;}
@@ -939,7 +945,7 @@ window.saveAndDistributeKey=async function(){
 };
 
 // ── AUTH ──
-window.switchAuthTab=function(tab){
+window.switchAuthTab=(tab){
   document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('active',i===(tab==='login'?0:1)));
   document.getElementById('auth-btn').textContent=tab==='login'?'Iniciar sesión':'Crear cuenta';
   document.getElementById('auth-name-group').style.display=tab==='register'?'block':'none';
@@ -947,29 +953,56 @@ window.switchAuthTab=function(tab){
   document.getElementById('auth-error').classList.remove('show');
 };
 
-window.doAuth=async function(){
-  const email=document.getElementById('auth-email').value.trim();
-  const pass=document.getElementById('auth-pass').value;
-  const isLogin=document.getElementById('auth-btn').textContent.includes('sesión');
-  const errEl=document.getElementById('auth-error');
+window.doAuth = async function() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  const isLogin = document.getElementById('auth-btn').textContent.includes('sesión');
+  const errEl = document.getElementById('auth-error');
   errEl.classList.remove('show');
-  if(!email||!pass){errEl.textContent='Rellena email y contraseña';errEl.classList.add('show');return;}
-  document.getElementById('auth-btn').textContent='⏳ Cargando...';
-  try{
-    if(isLogin){
-      await signInWithEmailAndPassword(auth,email,pass);
-    }else{
-      const cred=await createUserWithEmailAndPassword(auth,email,pass);
-      const bName=document.getElementById('auth-business-name').value.trim()||'Mis Gastos Pro';
-      await setDoc(doc(db,'users',cred.user.uid),{email,appName:bName,isAdmin:false,isPremium:false,createdAt:new Date().toISOString()});
+
+  if (!email || !pass) { 
+    errEl.textContent = 'Rellena email y contraseña'; 
+    errEl.classList.add('show'); 
+    return; 
+  }
+
+  document.getElementById('auth-btn').textContent = '⏳ Cargando...';
+
+  try {
+    // Esto asegura que la sesión se guarde en el navegador
+    await setPersistence(auth, browserLocalPersistence);
+
+    if (isLogin) {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      const bName = document.getElementById('auth-business-name').value.trim() || 'Mis Gastos Pro';
+      await setDoc(doc(db, 'users', cred.user.uid), {
+        email,
+        appName: bName,
+        isAdmin: false,
+        isPremium: false,
+        createdAt: new Date().toISOString()
+      });
     }
-  }catch(e){
-    const msgs={'auth/user-not-found':'Usuario no encontrado','auth/wrong-password':'Contraseña incorrecta','auth/email-already-in-use':'Email ya registrado','auth/weak-password':'Mínimo 6 caracteres','auth/invalid-email':'Email no válido','auth/invalid-credential':'Email o contraseña incorrectos','auth/requests-to-this-api-identitytoolkit-method-google.cloud.identitytoolkit.v1.authenticationservice.signinwithpassword-are-blocked.':'⚠️ Método de login bloqueado. Ve a Firebase Console → Authentication → Sign-in method y activa Email/Password. También desactiva "Email enumeration protection" en Settings.'};
-    errEl.textContent=msgs[e.code]||e.message;errEl.classList.add('show');
-    document.getElementById('auth-btn').textContent=isLogin?'Iniciar sesión':'Crear cuenta';
+  } catch (e) {
+    const msgs = {
+      'auth/user-not-found': 'Usuario no encontrado',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/email-already-in-use': 'Email ya registrado',
+      'auth/weak-password': 'Mínimo 6 caracteres',
+      'auth/invalid-email': 'Email no válido',
+      'auth/invalid-credential': 'Email o contraseña incorrectos',
+      'auth/requests-to-this-api-identitytoolkit-method-google.cloud.identitytoolkit.v1.authenticationservice.signinwithpassword-are-blocked.': '⚠️ Acceso bloqueado temporalmente.'
+    };
+    
+    errEl.textContent = msgs[e.code] || e.message;
+    errEl.classList.add('show');
+    document.getElementById('auth-btn').textContent = isLogin ? 'Iniciar sesión' : 'Crear cuenta';
   }
 };
 
+  
 window.doForgot=async function(){
   const email=document.getElementById('auth-email').value.trim();
   if(!email){showToast('Escribe tu email primero');return;}
