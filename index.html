@@ -1032,7 +1032,7 @@ document.addEventListener('click', function(e) {
     errEl.textContent = msgs[e.code] || e.message;
     errEl.classList.add('show');
     document.getElementById('auth-btn').textContent = isLogin ? 'Iniciar sesión' : 'Crear cuenta';
-  }
+  
 };
 window.doForgot=async function(){
   const email=document.getElementById('auth-email').value.trim();
