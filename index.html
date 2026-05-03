@@ -623,6 +623,7 @@ const firebaseConfig = {
 
 const app   = initializeApp(firebaseConfig);
 const auth  = getAuth(app);
+setPersistence(auth, browserLocalPersistence); // mantener sesión permanente
 const db    = getFirestore(app);
 const storage = getStorage(app);
 
