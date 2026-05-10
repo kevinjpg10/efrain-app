@@ -181,17 +181,13 @@ select.form-input option{background:var(--bg2)}
   50%{opacity:.9;transform:scale(1.015);}
 }
 
-  50%{
-    opacity:1;
-    transform:scale(1.035);
-    filter:drop-shadow(0 0 14px rgba(168,85,247,.95));
-  }
-}
+ 
+
 
 
 /* PAGOS PREMIUM */
 .premium-pay-entry{padding:0 16px 10px}
-.premium-pay-btn{width:100%;border:none;border-radius:14px;padding:12px 14px;background:linear-gradient(135deg,4f8ef7,var(--purple2));color:#fff;font-size:15px;font-weight:800;box-shadow:0 5px 16px rgba(168,85,247,.28);cursor:pointer}
+.premium-pay-btn{width:100%;border:none;border-radius:14px;padding:12px 14px;background:linear-gradient(135deg,#4f8ef7,var(--purple2));color:#fff;font-size:15px;font-weight:800;box-shadow:0 5px 16px rgba(168,85,247,.28);cursor:pointer}
 .premium-pay-grid{display:grid;grid-template-columns:1fr;gap:10px;margin:14px 0}
 .premium-pay-card{background:var(--bg3);border:1px solid rgba(255,255,255,.09);border-radius:var(--radius);padding:13px;text-align:left}
 .premium-pay-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:5px}
@@ -534,7 +530,11 @@ select.form-input option{background:var(--bg2)}
       <div class="settings-section-title">ℹ️ Info</div>
       <div style="background:var(--bg2);border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,.05);overflow:hidden">
         <div class="settings-item" style="cursor:default;border-bottom:1px solid rgba(255,255,255,.04)"><span style="color:var(--text2)">Gastos este mes</span><span style="font-weight:700" id="stat-count">0</span></div>
-        <div class="settings-item" style="cursor:default"><span style="color:var(--text2)">Versión</span><span style="color:var(--text2)">6.5 Pro</span></div>
+       
+<div class="settings-item" style="cursor:default">
+  <span style="color:var(--text2)">Versión</span>
+  <span id="app-version" style="color:var(--text2)">...</span>
+</div>
       </div>
     </div>
   </div>
@@ -591,6 +591,7 @@ select.form-input option{background:var(--bg2)}
       <div style="display:flex;gap:7px;margin-top:9px">
         <button class="btn btn-ghost" style="flex:1;margin:0;padding:8px;font-size:12px" onclick="document.getElementById('file-input-camera').click()">📷 Cámara</button>
         <button class="btn btn-ghost" style="flex:1;margin:0;padding:8px;font-size:12px" onclick="document.getElementById('file-input').click()">🖼️ Galería</button>
+
       </div>
       <div class="scan-status" id="scan-status"></div>
     </div>
@@ -757,6 +758,7 @@ window.addEventListener('load',function(){
 </script>
 
 <script type="module">
+
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, getDocs, setDoc, getDoc, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -848,7 +850,11 @@ async function uploadPhotoReport(){
     await uploadString(fileRef,html,'raw',{contentType:'text/html;charset=utf-8'});
     console.log('✅ Report uploaded, expenses:',expenses.length);
     return fileRef;
-  }catch(e){console.error('Storage upload:',e.code,e.message);return null;}
+  }catch(e){
+  console.error('Storage upload:',e.code,e.message);
+  alert('Error subiendo informe: '+e.code+' - '+e.message);
+  return null;
+}
 }
 
 async function uploadAndGetPhotoUrl(){
@@ -862,14 +868,23 @@ async function uploadAndGetPhotoUrl(){
     return '';
   }
 }
-
 window.viewPhotoReport=async function(){
-  if(!currentUser){showToast('Inicia sesión primero');return;}
+  if(!currentUser){
+    showToast('Inicia sesión primero');
+    return;
+  }
+
   try{
     showToast('⏳ Preparando informe...');
-    const url=await uploadAndGetPhotoUrl();
-    if(!url){showToast('❌ No se pudo abrir el informe');return;}
+
+    let url = await uploadAndGetPhotoUrl();
+
+    if(!url){
+      url = 'https://mis-gastos-pro-eedcf.web.app/fotos?uid=' + encodeURIComponent(currentUser.uid);
+    }
+
     window.open(url,'_blank','noopener,noreferrer');
+
   }catch(e){
     console.error('viewPhotoReport:',e);
     showToast('❌ No se pudo abrir el informe');
@@ -925,6 +940,24 @@ function openWhatsAppPremium(){
   document.getElementById('overlay-premium').classList.remove('open');
 }
 window.openWhatsAppPremium=openWhatsAppPremium;
+
+async function loadAppVersion(){
+  try{
+    const info = await App.getInfo();
+
+    const version =
+      info.version + ' (' + info.build + ')';
+
+    const el = document.getElementById('app-version');
+
+    if(el){
+      el.textContent = version;
+    }
+
+  }catch(e){
+    console.warn('Version:', e);
+  }
+}
 
 // ── APP NAME ──
 function updateAppName(val){
@@ -982,6 +1015,38 @@ function getPremiumBadgeInfo(v){
 
 async function deliverGeneratedFile(fileName, blob, opts={}){
   const {openInBrowser=false}=opts;
+
+  const isAndroid =
+    window.Capacitor &&
+    window.Capacitor.getPlatform &&
+    window.Capacitor.getPlatform() === 'android';
+
+  if(isAndroid && window.Capacitor.Plugins?.Filesystem && window.Capacitor.Plugins?.FileOpener){
+  try{
+    const base64 = await new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const saved = await window.Capacitor.Plugins.Filesystem.writeFile({
+      path: fileName,
+      data: base64,
+      directory: 'CACHE'
+    });
+
+    await window.Capacitor.Plugins.FileOpener.openFile({
+      path: saved.uri
+    });
+
+    return true;
+  }catch(e){
+    console.error('Android file open:', e);
+    alert('Error Android al abrir archivo: '+(e.message || JSON.stringify(e)));
+  }
+}
+
   const file=new File([blob],fileName,{type:blob.type||'application/octet-stream'});
   const url=URL.createObjectURL(blob);
 
@@ -1162,6 +1227,7 @@ window.doLogout=async function(){
 // ── AUTH STATE ──
 onAuthStateChanged(auth,async(user)=>{
   document.getElementById('loading-screen').style.display='none';
+  
   if(user){
     currentUser=user;
     document.getElementById('user-email-display').textContent=user.email;
@@ -1490,15 +1556,15 @@ window.showCharts=function(){
     const arcs=cats.map(([cat,amt])=>{const p=amt/tot;const col=CAT_COLORS[cat]||'#888';const a='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'" stroke-dasharray="'+(p*circ).toFixed(2)+' '+circ.toFixed(2)+'" stroke-dashoffset="'+(-(cum*circ)+(circ/4)).toFixed(2)+'"/>';cum+=p;return a;}).join('');
     const c2=2*Math.PI*36;
     return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:11px;padding:11px 14px;background:linear-gradient(135deg,rgba(79,142,247,.13),rgba(168,85,247,.08));border-radius:var(--radius);border:1px solid rgba(79,142,247,.18)"><span style="font-size:26px">'+c.flag+'</span><div><div style="font-size:15px;font-weight:800">'+c.name+' ('+sym+')</div><div style="font-size:11px;color:var(--text2)">'+exps.length+' gastos &bull; '+sym+tot.toFixed(2)+' total</div></div></div>'
-      +'<div class="kpi-grid"><div class="kpi" style="background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.22)"><div class="kpi-label">Total</div><div class="kpi-val" style="color:var(--accent)">'+sym+tot.toFixed(0)+'</div><div class="kpi-sub">'+exps.length+' gastos</div></div>'
-      +'<div class="kpi" style="background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.22)"><div class="kpi-label">Tarjeta</div><div class="kpi-val" style="color:var(--purple)">'+sym+tar.toFixed(0)+'</div><div class="kpi-sub">'+(tP*100).toFixed(0)+'%</div></div>'
-      +'<div class="kpi" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.22)"><div class="kpi-label">Efectivo</div><div class="kpi-val" style="color:var(--green)">'+sym+efe.toFixed(0)+'</div><div class="kpi-sub">'+(eP*100).toFixed(0)+'%</div></div></div>'
+      +'<div class="kpi-grid"><div class="kpi" style="background:rgba(79,142,247,.1);border-color:rgba(79,142,247,.22)"><div class="kpi-label">Total</div><div class="kpi-val" style="color:var(--accent)">'+sym+tot.toFixed(2)+'</div><div class="kpi-sub">'+exps.length+' gastos</div></div>'
+      +'<div class="kpi" style="background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.22)"><div class="kpi-label">Tarjeta</div><div class="kpi-val" style="color:var(--purple)">'+sym+tar.toFixed(2)+'</div><div class="kpi-sub">'+(tP*100).toFixed(2)+'%</div></div>'
+      +'<div class="kpi" style="background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.22)"><div class="kpi-label">Efectivo</div><div class="kpi-val" style="color:var(--green)">'+sym+efe.toFixed(2)+'</div><div class="kpi-sub">'+(eP*100).toFixed(2)+'%</div></div></div>'
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px">'
-      +'<div class="dash-card" style="padding:13px"><div class="dash-card-title">Por categoría</div><svg viewBox="0 0 156 156" style="width:100%;max-width:125px;display:block;margin:0 auto 9px"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--bg3)" stroke-width="'+sw+'"/>'+arcs+'<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text)">'+sym+tot.toFixed(0)+'</text><text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-size="7" fill="var(--text2)">total</text></svg>'+cats.slice(0,4).map(([cat,amt])=>'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px"><div style="width:8px;height:8px;border-radius:3px;background:'+(CAT_COLORS[cat]||'#888')+';flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(CAT_ICONS[cat]||'')+' '+cat+'</span><span style="font-size:10px;font-weight:700">'+sym+amt.toFixed(0)+'</span></div>').join('')+'</div>'
+      +'<div class="dash-card" style="padding:13px"><div class="dash-card-title">Por categoría</div><svg viewBox="0 0 156 156" style="width:100%;max-width:125px;display:block;margin:0 auto 9px"><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="var(--bg3)" stroke-width="'+sw+'"/>'+arcs+'<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" font-size="11" font-weight="800" fill="var(--text)">'+sym+tot.toFixed(2)+'</text><text x="'+cx+'" y="'+(cy+8)+'" text-anchor="middle" font-size="7" fill="var(--text2)">total</text></svg>'+cats.slice(0,4).map(([cat,amt])=>'<div style="display:flex;align-items:center;gap:5px;margin-bottom:4px"><div style="width:8px;height:8px;border-radius:3px;background:'+(CAT_COLORS[cat]||'#888')+';flex-shrink:0"></div><span style="font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(CAT_ICONS[cat]||'')+' '+cat+'</span><span style="font-size:10px;font-weight:700">'+sym+amt.toFixed(2)+'</span></div>').join('')+'</div>'
       +'<div class="dash-card" style="padding:13px"><div class="dash-card-title">Método pago</div><svg viewBox="0 0 100 100" style="width:100%;max-width:105px;display:block;margin:0 auto 7px"><circle cx="50" cy="50" r="36" fill="none" stroke="var(--bg3)" stroke-width="16"/><circle cx="50" cy="50" r="36" fill="none" stroke="var(--purple)" stroke-width="16" stroke-dasharray="'+(tP*c2).toFixed(2)+' '+c2.toFixed(2)+'" stroke-dashoffset="'+(c2/4).toFixed(2)+'"/><circle cx="50" cy="50" r="36" fill="none" stroke="var(--green)" stroke-width="16" stroke-dasharray="'+(eP*c2).toFixed(2)+' '+c2.toFixed(2)+'" stroke-dashoffset="'+(c2/4-tP*c2).toFixed(2)+'"/><text x="50" y="46" text-anchor="middle" font-size="10" font-weight="800" fill="var(--text)">'+(tP*100).toFixed(0)+'%</text><text x="50" y="57" text-anchor="middle" font-size="7" fill="var(--text2)">tarjeta</text></svg>'
       +'<div style="background:var(--bg3);border-radius:7px;padding:9px;text-align:center;margin-bottom:7px"><div style="font-size:8px;color:var(--text2);margin-bottom:2px;text-transform:uppercase">Ticket medio</div><div style="font-size:17px;font-weight:800;color:var(--amber)">'+sym+avg.toFixed(2)+'</div></div>'
       +'<div style="display:flex;gap:7px"><div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--purple)"></div><span style="font-size:9px;color:var(--text2)">Tarjeta</span></div><div style="display:flex;align-items:center;gap:3px"><div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div><span style="font-size:9px;color:var(--text2)">Efectivo</span></div></div></div></div>'
-      +(weeks.length?'<div class="dash-card"><div class="dash-card-title">Gasto por semana</div><div style="display:flex;align-items:flex-end;gap:7px;height:75px">'+weeks.map(([w,a])=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:var(--text2)">'+sym+a.toFixed(0)+'</div><div style="width:100%;background:linear-gradient(180deg,var(--accent),var(--purple2));border-radius:3px 3px 0 0;height:'+Math.max(5,(a/maxW*55)).toFixed(0)+'px"></div><div style="font-size:8px;color:var(--text2)">'+w+'</div></div>').join('')+'</div></div>':'')
+      +(weeks.length?'<div class="dash-card"><div class="dash-card-title">Gasto por semana</div><div style="display:flex;align-items:flex-end;gap:7px;height:75px">'+weeks.map(([w,a])=>'<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px"><div style="font-size:8px;color:var(--text2)">'+sym+a.toFixed(2)+'</div><div style="width:100%;background:linear-gradient(180deg,var(--accent),var(--purple2));border-radius:3px 3px 0 0;height:'+Math.max(5,(a/maxW*55)).toFixed(0)+'px"></div><div style="font-size:8px;color:var(--text2)">'+w+'</div></div>').join('')+'</div></div>':'')
       +'<div class="dash-card"><div class="dash-card-title">Desglose por categoría</div>'+cats.map(([cat,amt])=>{const col=CAT_COLORS[cat]||'#888';const icon=CAT_ICONS[cat]||'💰';const pct=(amt/tot*100).toFixed(1);return '<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:12px">'+icon+' '+cat+'</span><div><span style="font-size:12px;font-weight:800">'+sym+amt.toFixed(2)+'</span><span style="font-size:9px;color:var(--text2);margin-left:3px">'+pct+'%</span></div></div><div style="background:var(--bg3);border-radius:3px;height:6px;overflow:hidden"><div style="width:'+(amt/maxC*100).toFixed(0)+'%;height:100%;background:'+col+';border-radius:3px"></div></div></div>';}).join('')+'</div>'
       +'<div class="dash-card"><div class="dash-card-title">Top gastos</div>'+top5.map((e,i)=>{const col=CAT_COLORS[e.category]||'#888';const icon=CAT_ICONS[e.category]||'💰';const cur2=CURRENCIES[e.currency||'EUR']||getCurrency();const ds=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'}):'';return '<div style="display:flex;align-items:center;gap:9px;padding:8px 0;'+(i<top5.length-1?'border-bottom:1px solid var(--bg3)':'')+'"><div style="font-size:13px;font-weight:900;color:'+(i===0?'var(--amber)':'var(--text2)')+';min-width:20px;text-align:center">#'+(i+1)+'</div><div style="width:33px;height:33px;border-radius:9px;background:'+col+'18;display:flex;align-items:center;justify-content:center;font-size:15px">'+icon+'</div><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.name+'</div><div style="font-size:9px;color:var(--text2)">'+ds+' &bull; '+e.category+'</div></div><div style="font-size:13px;font-weight:800;color:'+col+'">'+cur2.symbol+e.amount.toFixed(2)+'</div></div>';}).join('')+'</div>'
       +'<div class="neon-title">DESCARGA Y COMPARTE TUS INFORMES DE MANERA PROFESIONAL</div>'
@@ -1651,7 +1717,7 @@ XLSX.utils.book_append_sheet(wb, resumenWs, 'Resumen');
         rows.push({ Fecha: 'Tarjeta', [amtCol]: tar });
         rows.push({ Fecha: 'Efectivo', [amtCol]: efe });
 
-        if (photoUrl) {
+        if (expenses.some(e => e.photo)) {
             const shortPhotoUrl = currentUser
                 ? ('https://mis-gastos-pro-eedcf.web.app/fotos?uid=' + encodeURIComponent(currentUser.uid))
                 : 'https://mis-gastos-pro-eedcf.web.app/fotos';
@@ -1677,29 +1743,31 @@ XLSX.utils.book_append_sheet(wb, resumenWs, 'Resumen');
         XLSX.utils.book_append_sheet(wb, ws, (code + ' ' + sym).substring(0, 31));
     });
 
-    // ── Descarga compatible iPhone + Android + PC ──
-    try {
-        const xlsxData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-        const blob     = new Blob([xlsxData], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const blobUrl  = URL.createObjectURL(blob);
-        const fileName = 'Gastos_' + month.replace(/\s+/g, '_') + '.xlsx';
-        const a = document.createElement('a');
-        a.href = blobUrl; a.download = fileName; a.style.display = 'none';
-        document.body.appendChild(a); a.click();
-        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(blobUrl); }, 3000);
-        showToast(photoUrl ? '📊 Excel con link de fotos ✓' : '📊 Excel descargado ✓');
-    } catch (e) {
-        console.error('Error descargando Excel:', e);
-        showToast('❌ Error al generar el archivo');
-    }
+  // ── Descarga compatible Web + Android ──
+try {
+    const xlsxData = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([xlsxData], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+
+    const fileName = 'Gastos_' + month.replace(/\s+/g, '_') + '.xlsx';
+
+    await deliverGeneratedFile(fileName, blob);
+
+    showToast(photoUrl ? '📊 Excel con link de fotos ✓' : '📊 Excel listo ✓');
+
+} catch (e) {
+    console.error('Error descargando Excel:', e);
+    alert('Error Excel: ' + (e.message || JSON.stringify(e)));
+    showToast('❌ Error al generar el archivo');
+}
 };
-
-
 
 // ── PDF (todos los usuarios pueden exportar) ──
 window.exportPDF=async function(){
   if(!expenses.length){showToast('No hay gastos para exportar');return;}
   const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  
   const month=monthLabel();const BG=[10,10,15],BG2=[19,19,26],BG3=[30,30,40],ACC=[79,142,247];const W=210;
   const groups={};expenses.forEach(e=>{const cur=e.currency||'EUR';if(!groups[cur])groups[cur]=[];groups[cur].push(e);});
   let first=true;
@@ -1711,7 +1779,7 @@ window.exportPDF=async function(){
     doc.setFillColor(...BG);doc.rect(0,0,W,297,'F');doc.setFillColor(20,20,35);doc.rect(0,0,W,50,'F');doc.setFillColor(...ACC);doc.rect(0,0,5,50,'F');
     doc.setTextColor(245,245,247);doc.setFontSize(20);doc.setFont('helvetica','bold');doc.text('Mis Gastos Pro',13,19);
     doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(140,140,160);
-    doc.text('Informe — '+month,13,27);doc.text(c.flag+' '+c.name+' ('+sym+')',13,34);doc.text('Generado: '+new Date().toLocaleDateString('es-ES'),13,41);
+    doc.text('Informe — '+month,13,27);doc.text(c.name+' ('+sym+')',13,34);doc.text('Generado: '+new Date().toLocaleDateString('es-ES'),13,41);
     [[tot,'Total',[79,142,247]],[tar,'Tarjeta',[168,85,247]],[efe,'Efectivo',[34,197,94]]].forEach(([v,l,cl],i)=>{
       const x=14+i*65,y=55;doc.setFillColor(...BG2);doc.roundedRect(x,y,60,21,3,3,'F');doc.setFillColor(...cl);doc.roundedRect(x,y,60,3,2,2,'F');
       doc.setTextColor(120,120,140);doc.setFontSize(6.5);doc.setFont('helvetica','bold');doc.text(l.toUpperCase(),x+30,y+8,'center');
@@ -1879,7 +1947,24 @@ window.adminTogglePremium=async function(){
   function keysByLength(map){return Object.keys(map).sort(function(a,b){return b.length-a.length;});}
   function replaceMap(text,map){var out=text;keysByLength(map).forEach(function(k){out=out.split(k).join(map[k]);});return out;}
   function translateDates(text,to){var out=text;if(to==='en'){out=replaceMap(out,months);out=replaceMap(out,days);out=out.replace(/de\s+(January|February|March|April|May|June|July|August|September|October|November|December)/g,'$1');}else{out=replaceMap(out,revMonths);out=replaceMap(out,revDays);out=out.replace(/(Domingo|Lunes|Martes|Miércoles|Jueves|Viernes|Sábado)\s+(\d{1,2})\s+(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/g,'$1 $2 de $3');}return out;}
-  function translateText(text,to){if(!text||!text.trim())return text;var lead=(text.match(/^\s*/)||[''])[0],tail=(text.match(/\s*$/)||[''])[0],core=text.trim();var out=replaceMap(core,to==='en'?dict:reverse);out=translateDates(out,to);return lead+out+tail;}
+  function translateText(text,to){
+  if(!text || !text.trim()) return text;
+
+  // IMPORTANTE:
+  // En español NO intentamos "destraducir", porque rompe palabras:
+  // Export -> Exportar -> Exportarar
+  // Gas -> Gasolina -> Gasolinaolina
+  if(to === 'es') return text;
+
+  var lead = (text.match(/^\s*/) || [''])[0];
+  var tail = (text.match(/\s*$/) || [''])[0];
+  var core = text.trim();
+
+  var out = replaceMap(core, dict);
+  out = translateDates(out, to);
+
+  return lead + out + tail;
+}
   function skip(el){if(!el)return true;if(el.closest&&el.closest('.no-translate'))return true;var n=el.nodeName;return n==='SCRIPT'||n==='STYLE'||n==='NOSCRIPT'||n==='TEXTAREA'||n==='CODE'||n==='PRE';}
   function setAttr(el,a,v){if(el.getAttribute(a)!==v)el.setAttribute(a,v);}
   function apply(root){
