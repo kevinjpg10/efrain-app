@@ -1,26 +1,26 @@
 {
   "name": "Mis Gastos Pro",
   "short_name": "Gastos Pro",
-  "start_url": "/efrain-app/index.html",
-  "scope": "/efrain-app/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0a0a0f",
   "theme_color": "#4f8ef7",
   "icons": [
     {
-      "src": "/efrain-app/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/efrain-app/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/efrain-app/icon-maskable.png",
+      "src": "/icon-maskable.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
