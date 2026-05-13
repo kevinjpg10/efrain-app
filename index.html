@@ -192,6 +192,12 @@ select.form-input option{background:var(--bg2)}
 .premium-pay-card{background:var(--bg3);border:1px solid rgba(255,255,255,.09);border-radius:var(--radius);padding:13px;text-align:left}
 .premium-pay-title{font-size:13px;font-weight:800;color:var(--text);margin-bottom:5px}
 .premium-pay-text{font-size:11px;color:var(--text2);line-height:1.45;margin-bottom:10px}
+
+.premium-pay-debug{display:none;background:rgba(79,142,247,.08);border:1px solid rgba(79,142,247,.25);border-radius:12px;padding:10px 12px;margin:10px 0 12px;text-align:left;font-size:11px;line-height:1.55;color:var(--text2)}
+.premium-pay-debug.show{display:block}
+.premium-android-only,.premium-web-only{display:none}
+.premium-price-big{font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px}
+.premium-pay-card strong{color:var(--text)}
 </style>
 <style id="i18n-lang-style">
 .lang-mini-btn{position:fixed;top:calc(8px + env(safe-area-inset-top));right:max(8px,calc((100vw - 480px)/2 + 8px));z-index:1000;border:1px solid rgba(255,255,255,.12);background:rgba(30,30,40,.86);color:var(--text);border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800;letter-spacing:.3px;box-shadow:0 3px 12px rgba(0,0,0,.22);cursor:pointer;-webkit-appearance:none;appearance:none}
@@ -279,8 +285,8 @@ select.form-input option{background:var(--bg2)}
     <button class="tab" onclick="setFilterCard('tarjeta')">💳 Tarjeta</button>
     <button class="tab" onclick="setFilterCard('efectivo')">💵 Efectivo</button>
   </div>
-  <div class="premium-pay-entry">
-    <button class="premium-pay-btn" onclick="document.getElementById('overlay-premium').classList.add('open')">⭐ Activar Premium: Stripe o Bizum</button>
+  <div class="premium-pay-entry" id="premium-main-entry">
+    <button class="premium-pay-btn" id="premium-main-btn" onclick="openPremiumOverlay()">⭐ Activar Premium</button>
   </div>
   <div class="neon-title">ABRE TU CAMARA Y EMPIEZA A GUARDAR TUS GASTOS</div>
   <div class="list" id="expense-list"></div>
@@ -318,7 +324,7 @@ select.form-input option{background:var(--bg2)}
     <div class="settings-section">
       <div class="settings-section-title">⭐ Plan actual</div>
       <div id="premium-badge"></div>
-      <button class="btn btn-primary" style="margin-top:9px;margin-bottom:0;padding:12px" onclick="document.getElementById('overlay-premium').classList.add('open')">⭐ Ver formas de pago Premium</button>
+      <button class="btn btn-primary" id="premium-settings-btn" style="margin-top:9px;margin-bottom:0;padding:12px" onclick="openPremiumOverlay()">⭐ Ver formas de pago Premium</button>
     </div>
     <div class="settings-section">
       <div class="settings-section-title">🏷️ Nombre de tu negocio</div>
@@ -669,10 +675,9 @@ select.form-input option{background:var(--bg2)}
     <div style="text-align:center;padding:8px 0 14px">
       <div style="font-size:42px;margin-bottom:11px">⭐</div>
       <div style="font-size:19px;font-weight:800;margin-bottom:7px">Control total de tus gastos con IA</div>
-         <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">
         Escanea tickets, guarda tus gastos automáticamente y genera informes profesionales en segundos.
       </div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5">Elige una forma de pago para activar Premium.</div>
       <div style="background:var(--bg3);border-radius:var(--radius);padding:14px;margin-bottom:14px;text-align:left">
         <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:9px">✨ Premium incluye:</div>
         <div style="font-size:12px;color:var(--text2);line-height:2">
@@ -683,32 +688,57 @@ select.form-input option{background:var(--bg2)}
           ✅ Crea informes con fotos para justificar gastos<br>
           ✅ Nunca pierdas un ticket otra vez</div>
       </div>
-      <div class="premium-pay-text">
-            Ideal para empezar. Acceso completo a Premium con renovación mensual O Pago unico anual y relajate que escaneamos, guardamos y generamos tus informes de manera profesional
-          </div>
-          <div style="font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px">
-            4,99 € / mes o 53,89 € / año
-          </div>
-          <div style="font-size:11px;color:var(--text2);margin-bottom:11px">
-            Cancela cuando quieras
-          </div>
 
-  
+      <div id="premium-billing-debug" class="premium-pay-debug"></div>
+
+      <div class="premium-web-only" id="premium-web-title">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.5">Elige una forma de pago para activar Premium.</div>
+        <div class="premium-price-big">4,99 € / mes o 53,89 € / año</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:11px">Pagos web con Stripe o Bizum</div>
+      </div>
+
+      <div class="premium-android-only" id="premium-android-title">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.5">Pago seguro dentro de la app con Google Play.</div>
+        <div class="premium-price-big">6,99 € / mes</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:11px">Cancela cuando quieras desde Google Play</div>
+      </div>
+
       <div class="premium-pay-grid">
-        <div class="premium-pay-card">
-          <div class="premium-pay-title">💳 Pago único</div>
-          <div class="premium-pay-text">Paga una vez con Stripe y disfruta Premium por un año.</div>
-          <button class="btn btn-primary" style="margin:0" onclick="openStripePago()">💳 Suscripcion Anual</button>
+        <div class="premium-pay-card premium-android-only">
+          <div class="premium-pay-title">🟢 Google Play · Mensual</div>
+          <div class="premium-pay-text">Suscripción mensual segura desde Google Play. Producto: <strong>gastospro_premium</strong> · plan <strong>premium-monthly</strong>.</div>
+          <button class="btn btn-green" style="margin:0" onclick="buyGooglePlayPremium('monthly')">🟢 Suscribirme mensual</button>
         </div>
-        <div class="premium-pay-card">
-          <div class="premium-pay-title">🔁 Suscripción mensual</div>
-          <div class="premium-pay-text">Suscríbete mensualmente con Stripe y cancela cuando quieras.</div>
-          <button class="btn btn-primary" style="margin:0" onclick="openStripeSuscripcion()">🔁 Suscribsion Mensual</button>
+        <div class="premium-pay-card premium-android-only">
+          <div class="premium-pay-title">🟢 Google Play · Anual</div>
+          <div class="premium-pay-text">Suscripción anual segura desde Google Play. Producto: <strong>gastospro_premium</strong> · plan <strong>premium-yearly</strong>.</div>
+          <button class="btn btn-primary" style="margin:0" onclick="buyGooglePlayPremium('yearly')">⭐ Suscribirme anual</button>
         </div>
-        <div class="premium-pay-card">
+        <div class="premium-pay-card premium-android-only">
+          <div class="premium-pay-title">🔄 Restaurar compra</div>
+          <div class="premium-pay-text">Usa esta opción si ya compraste Premium con esta cuenta de Google Play.</div>
+          <button class="btn btn-ghost" style="margin:0" onclick="restoreGooglePlayPremium()">🔄 Restaurar compra</button>
+        </div>
+
+        <div class="premium-pay-card premium-web-only">
+          <div class="premium-pay-title">💳 Pago anual web</div>
+          <div class="premium-pay-text">Paga con Stripe desde la web y disfruta Premium por un año.</div>
+          <button class="btn btn-primary" style="margin:0" onclick="openStripePago()">💳 Suscripción anual</button>
+        </div>
+        <div class="premium-pay-card premium-web-only">
+          <div class="premium-pay-title">🔁 Suscripción mensual web</div>
+          <div class="premium-pay-text">Suscríbete mensualmente con Stripe desde la web y cancela cuando quieras.</div>
+          <button class="btn btn-primary" style="margin:0" onclick="openStripeSuscripcion()">🔁 Suscripción mensual</button>
+        </div>
+        <div class="premium-pay-card premium-web-only">
           <div class="premium-pay-title">📲 Bizum por WhatsApp</div>
           <div class="premium-pay-text">Abre WhatsApp para pedir el pago por Bizum y activar Premium.</div>
           <button class="btn btn-wa" style="margin:0" onclick="openWhatsAppPremium()">💬 Pagar por Bizum</button>
+        </div>
+        <div class="premium-pay-card premium-android-only">
+          <div class="premium-pay-title">💬 WhatsApp soporte</div>
+          <div class="premium-pay-text">Contacta por WhatsApp si tienes dudas con tu suscripción o quieres ayuda.</div>
+          <button class="btn btn-wa" style="margin:0" onclick="openWhatsAppPremium()">💬 Contactar soporte</button>
         </div>
       </div>
       <button class="btn btn-ghost" onclick="document.getElementById('overlay-premium').classList.remove('open')">Ahora no</button>
@@ -941,6 +971,159 @@ function openWhatsAppPremium(){
 }
 window.openWhatsAppPremium=openWhatsAppPremium;
 
+
+// ── GOOGLE PLAY BILLING / PREMIUM PAYMENT MODE ──
+const PLAY_PRODUCT_ID = 'gastospro_premium';
+const PLAY_MONTHLY_ID = 'premium-monthly';
+const PLAY_YEARLY_ID  = 'premium-yearly';
+let billingReady=false, billingInitStarted=false, billingLastError='', billingModeOverride=null;
+
+function isAndroidNative(){
+  try{return !!(window.Capacitor && window.Capacitor.getPlatform && window.Capacitor.getPlatform()==='android');}
+  catch(_){return false;}
+}
+function isBillingDebugAndroid(){
+  try{return new URLSearchParams(location.search).get('billingdebug')==='android';}
+  catch(_){return false;}
+}
+function useGooglePlayUI(){
+  return isAndroidNative() || isBillingDebugAndroid() || billingModeOverride==='android';
+}
+function getBillingDebugText(){
+  return 'Modo detectado: '+(useGooglePlayUI()?'ANDROID / GOOGLE PLAY':'WEB')+'<br>'+
+    'Capacitor Android: '+(isAndroidNative()?'sí':'no')+'<br>'+
+    'Debug Android: '+(isBillingDebugAndroid()?'sí':'no')+'<br>'+
+    'CdvPurchase disponible: '+(window.CdvPurchase?'sí':'no')+'<br>'+
+    'Billing inicializado: '+(billingReady?'sí':'no')+'<br>'+
+    'Producto: '+PLAY_PRODUCT_ID+'<br>'+
+    'Planes: '+PLAY_MONTHLY_ID+' / '+PLAY_YEARLY_ID+(billingLastError?'<br>Error: '+billingLastError:'');
+}
+function updatePremiumPaymentVisibility(premiumActive){
+  const shouldHide=!!premiumActive;
+  ['premium-main-entry','premium-settings-btn'].forEach(id=>{const el=document.getElementById(id); if(el)el.style.display=shouldHide?'none':'';});
+  const android=useGooglePlayUI();
+  document.querySelectorAll('.premium-android-only').forEach(el=>el.style.display=(!shouldHide&&android)?'block':'none');
+  document.querySelectorAll('.premium-web-only').forEach(el=>el.style.display=(!shouldHide&&!android)?'block':'none');
+  const mainBtn=document.getElementById('premium-main-btn');
+  if(mainBtn)mainBtn.textContent=android?'⭐ Activar Premium con Google Play':'⭐ Activar Premium: Stripe o Bizum';
+  const dbg=document.getElementById('premium-billing-debug');
+  if(dbg){dbg.innerHTML=getBillingDebugText();dbg.classList.add('show');}
+}
+window.openPremiumOverlay=function(){
+  const premiumInfo=getPremiumStatus(premiumHasta);
+  const premiumActive=!!(isPremium&&premiumInfo&&!premiumInfo.isExpired);
+  updatePremiumPaymentVisibility(premiumActive);
+  if(premiumActive){showToast('⭐ Ya eres Premium');return;}
+  document.getElementById('overlay-premium').classList.add('open');
+  if(useGooglePlayUI()) initGooglePlayBilling();
+};
+
+async function activatePremiumFromGooglePlay(plan){
+  if(!currentUser)return;
+  const desde=new Date();
+  const hasta=new Date(desde);
+  if(plan==='yearly') hasta.setFullYear(hasta.getFullYear()+1);
+  else hasta.setMonth(hasta.getMonth()+1);
+  await setDoc(doc(db,'users',currentUser.uid),{
+    isPremium:true,
+    premiumDesde:desde.toISOString(),
+    premiumHasta:hasta.toISOString(),
+    premiumOrigen:'google_play',
+    premiumPlan:plan,
+    premiumProducto:PLAY_PRODUCT_ID,
+    premiumActualizado:new Date().toISOString()
+  },{merge:true});
+  premiumDesde=desde.toISOString();
+  premiumHasta=hasta.toISOString();
+  isPremium=true;
+  updatePremiumUI();
+  document.getElementById('overlay-premium').classList.remove('open');
+  showToast('⭐ Premium activado');
+}
+
+function findGooglePlayOffer(plan){
+  try{
+    const store=CdvPurchase.store;
+    const platform=CdvPurchase.Platform.GOOGLE_PLAY;
+    const product=store.get(PLAY_PRODUCT_ID, platform) || store.get(PLAY_PRODUCT_ID);
+    const offers=product && product.offers ? Array.from(product.offers) : [];
+    const target=plan==='yearly'?PLAY_YEARLY_ID:PLAY_MONTHLY_ID;
+    return offers.find(o=>String(o.id||'').includes(target)) ||
+           offers.find(o=>String(o.id||'').includes(plan==='yearly'?'year':'month')) ||
+           offers[plan==='yearly'?1:0] || offers[0] || null;
+  }catch(e){billingLastError=e.message||String(e);return null;}
+}
+
+function initGooglePlayBilling(){
+  if(!useGooglePlayUI())return;
+  if(billingInitStarted)return;
+  billingInitStarted=true;
+  if(!window.CdvPurchase){
+    billingLastError='CdvPurchase no está disponible todavía. En web normal es esperado; en Android debe aparecer tras deviceready.';
+    updatePremiumPaymentVisibility(false);
+    return;
+  }
+  try{
+    const store=CdvPurchase.store;
+    const ProductType=CdvPurchase.ProductType;
+    const Platform=CdvPurchase.Platform;
+    store.verbosity = CdvPurchase.LogLevel ? CdvPurchase.LogLevel.DEBUG : 4;
+    store.register([{
+      id: PLAY_PRODUCT_ID,
+      type: ProductType.PAID_SUBSCRIPTION || ProductType.SUBSCRIPTION,
+      platform: Platform.GOOGLE_PLAY
+    }]);
+    store.when().productUpdated(()=>{billingReady=true;billingLastError='';updatePremiumPaymentVisibility(false);});
+    store.when().approved(async transaction=>{
+      try{
+        const offerId=String(transaction.offerId||transaction.productId||'');
+        const plan=offerId.includes('year')?'yearly':'monthly';
+        await activatePremiumFromGooglePlay(plan);
+        if(transaction.finish) await transaction.finish();
+      }catch(e){billingLastError=e.message||String(e);showToast('❌ Error activando Premium');}
+    });
+    store.when().finished(()=>{showToast('✅ Compra finalizada');});
+    store.error(err=>{billingLastError=(err&&err.message)||JSON.stringify(err);updatePremiumPaymentVisibility(false);});
+    store.initialize([Platform.GOOGLE_PLAY]);
+    setTimeout(()=>{billingReady=true;updatePremiumPaymentVisibility(false);},2500);
+  }catch(e){billingLastError=e.message||String(e);updatePremiumPaymentVisibility(false);}
+}
+
+window.buyGooglePlayPremium=async function(plan){
+  if(!useGooglePlayUI()){
+    showToast('Google Play Billing solo funciona dentro de la app Android');
+    return;
+  }
+  initGooglePlayBilling();
+  if(isBillingDebugAndroid() && !isAndroidNative()){
+    showToast('🧪 Vista previa Android: botón visible. La compra real solo funciona en Play Store.');
+    return;
+  }
+  if(!window.CdvPurchase){showToast('❌ Billing no disponible todavía');return;}
+  try{
+    const offer=findGooglePlayOffer(plan);
+    if(!offer){showToast('❌ No se encontró oferta '+plan);return;}
+    await CdvPurchase.store.order(offer);
+  }catch(e){billingLastError=e.message||String(e);showToast('❌ '+billingLastError);updatePremiumPaymentVisibility(false);}
+};
+
+window.restoreGooglePlayPremium=async function(){
+  initGooglePlayBilling();
+  if(isBillingDebugAndroid() && !isAndroidNative()){
+    showToast('🧪 Restaurar solo se prueba dentro de Android Play Store');
+    return;
+  }
+  try{
+    if(window.CdvPurchase && CdvPurchase.store && CdvPurchase.store.restorePurchases){
+      await CdvPurchase.store.restorePurchases();
+      showToast('🔄 Restaurando compras...');
+    }else showToast('❌ Restaurar no disponible');
+  }catch(e){billingLastError=e.message||String(e);showToast('❌ '+billingLastError);}
+};
+
+window.addEventListener('load',()=>setTimeout(()=>updatePremiumPaymentVisibility(false),600));
+document.addEventListener('deviceready',()=>{billingModeOverride='android';initGooglePlayBilling();updatePremiumPaymentVisibility(false);},false);
+
 async function loadAppVersion(){
   try{
     const info = await App.getInfo();
@@ -1078,9 +1261,10 @@ async function deliverGeneratedFile(fileName, blob, opts={}){
 function updatePremiumUI(){
   const premiumInfo=getPremiumStatus(premiumHasta);
   const premiumActive=!!(isPremium&&premiumInfo&&!premiumInfo.isExpired);
+  updatePremiumPaymentVisibility(premiumActive);
   const atLimit=!premiumActive&&expenses.length>=FREE_LIMIT;
   const fab=document.getElementById('fab-btn');
-  if(fab){fab.style.opacity=atLimit?'0.45':'1';fab.onclick=atLimit?()=>document.getElementById('overlay-premium').classList.add('open'):window.showAddSheet;}
+  if(fab){fab.style.opacity=atLimit?'0.45':'1';fab.onclick=atLimit?()=>openPremiumOverlay():window.showAddSheet;}
 
   const adminBtn=document.getElementById('admin-panel-btn');
   if(adminBtn)adminBtn.style.display=isAdmin?'block':'none';
@@ -1365,7 +1549,7 @@ window.saveExpense=async function(){
   const isNew=!id;
 
   const activePremium=!!(isPremium&&getPremiumStatus(premiumHasta)&&!getPremiumStatus(premiumHasta).isExpired);
-  if(isNew&&!activePremium&&expenses.length>=FREE_LIMIT){document.getElementById('overlay-premium').classList.add('open');return;}
+  if(isNew&&!activePremium&&expenses.length>=FREE_LIMIT){openPremiumOverlay();return;}
   if(isNew&&!isPremium&&currentImageB64){
     if(expenses.filter(e=>e.photo).length>=FREE_PHOTO_LIM){document.getElementById('overlay-photo-limit').classList.add('open');return;}
   }
