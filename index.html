@@ -731,10 +731,19 @@ select.form-input option{background:var(--bg2)}
           <button class="btn btn-primary" style="margin:0" onclick="openStripeSuscripcion()">🔁 Suscripción mensual</button>
         </div>
 
-   
-<button id="btn-manage-stripe" class="pay-btn ghost" onclick="window.open('https://billing.stripe.com/p/login/bJeeVceEc41k6302ANfw400','_blank','noopener,noreferrer')">
-  ⚙️ Gestionar suscripción
-</button>
+ <div class="premium-pay-card premium-web-only">
+  <div class="premium-pay-title">⚙️ Gestionar suscripción</div>
+  <div class="premium-pay-text">
+    Cancela tu suscripción, cambia tu método de pago o descarga tus facturas.
+  </div>
+
+  <button id="btn-manage-stripe"
+    class="btn btn-primary"
+    style="margin:0;background:#2b2f3a;"
+    onclick="window.open('https://billing.stripe.com/p/login/bJeeVceEc41k6302ANfw400','_blank','noopener,noreferrer')">
+    ⚙️ Gestionar suscripción
+  </button>
+</div>
         
         <div class="premium-pay-card premium-web-only">
           <div class="premium-pay-title">📲 Bizum por WhatsApp</div>
