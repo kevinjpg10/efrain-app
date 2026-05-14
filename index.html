@@ -953,12 +953,12 @@ function getCurrency(){return CURRENCIES[localStorage.getItem('currency')||'EUR'
 function saveCurrency(code){localStorage.setItem('currency',code);render();showToast(CURRENCIES[code].flag+' '+CURRENCIES[code].name);}
 window.saveCurrency=saveCurrency;
 
-function openStripePago(){
+function openStripePagoAnual(){
   window.open('https://buy.stripe.com/dRmbJ0fIg1Tc2QOcbnfw403','_blank','noopener,noreferrer');
 }
 window.openStripePago=openStripePago;
 
-function openStripeSuscripcion(){
+function openStripeSuscripcionMensual(){
   window.open('https://buy.stripe.com/7sY8wOgMkbtMdvs5MZfw402','_blank','noopener,noreferrer');
 }
 window.openStripeSuscripcion=openStripeSuscripcion;
