@@ -1412,11 +1412,33 @@ window.doAuth=async function(){
   }
 };
 
-window.doForgot=async function(){
-  const email=document.getElementById('auth-email').value.trim();
-  if(!email){showToast('Escribe tu email primero');return;}
-  try{await sendPasswordResetEmail(auth,email);showToast('📧 Email de recuperación enviado');}
-  catch(e){showToast('❌ '+e.message);}
+window.doForgot = async function(){
+  const email = document.getElementById('auth-email').value.trim();
+
+  if(!email){
+    showToast('Escribe tu email primero');
+    return;
+  }
+
+  try{
+    await sendPasswordResetEmail(auth, email, {
+      url: 'https://gastospro.es',
+      handleCodeInApp: false
+    });
+
+    showToast('📧 Email enviado. Revisa SPAM o promociones.');
+  }
+  catch(e){
+    console.error('Error reset password:', e);
+
+    if(e.code === 'auth/invalid-email'){
+      showToast('❌ Email no válido');
+    }else if(e.code === 'auth/user-not-found'){
+      showToast('❌ No existe una cuenta con ese email');
+    }else{
+      showToast('❌ No se pudo enviar el email');
+    }
+  }
 };
 
 window.doLogout=async function(){
