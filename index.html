@@ -2148,7 +2148,22 @@ window.adminTogglePremium=async function(){
 </div>
 <script id="i18n-lang-script">
 
-var reverse={};
+(function(){
+
+var STORE_KEY='app_language';
+var current=localStorage.getItem(STORE_KEY)||'es';
+
+var dict={
+
+  'Ajustes':'Settings',
+  'Cerrar sesión':'Sign out',
+  'Moneda':'Currency',
+
+  // TODO el resto del diccionario
+
+};
+
+  var reverse={};
 Object.keys(dict).forEach(function(k){ reverse[dict[k]]=k; });
 
 function keysByLength(map){
