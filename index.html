@@ -2147,72 +2147,220 @@ window.adminTogglePremium=async function(){
   Efra Apps © 2026
 </div>
 <script id="i18n-lang-script">
-(function(){
-  var STORE_KEY='app_language';
-  var current=localStorage.getItem(STORE_KEY)||'es';
-  var dict={
-    'Cargando...':'Loading...','Gestiona tus gastos de forma inteligente':'Manage your expenses intelligently','Gestiona tus gastos de forma inteligente con IA.':'Manage your expenses intelligently with AI.',
-    'Iniciar sesión':'Sign in','Crear cuenta':'Create account','Email':'Email','Contraseña':'Password','Nombre de tu negocio':'Business name','Aparece en el encabezado':'Shown in the header','Mi App de Gastos':'My Expense App','tu@email.com':'your@email.com','¿Olvidaste tu contraseña?':'Forgot your password?',
-    'Detalle del gasto':'Expense details','Ajustes':'Settings','Cuenta':'Account','Panel de Administración':'Admin Panel','Cerrar sesión':'Sign out','Plan actual':'Current plan','Ver formas de pago Premium':'View Premium payment methods','Guardar nombre':'Save name',
-    'API Key de Gemini':'Gemini API key','Guardar y distribuir a todos':'Save and distribute to everyone','Probar conexión':'Test connection','Moneda':'Currency','Moneda por defecto':'Default currency','Exportar':'Export','Informe de fotos':'Photo report','Ver online':'View online','Descargar':'Download','Cierre de mes':'Month closing','Cerrar mes y reiniciar':'Close month and reset','Borra informes pasados':'Delete previous reports','Borrar Informes':'Delete reports','Info':'Info','Gastos este mes':'Expenses this month','Versión':'Version','Informe mensual':'Monthly report','Panel Admin':'Admin Panel','Buscar por email...':'Search by email...',
-    'Nuevo gasto':'New expense','Escanear ticket con Gemini AI':'Scan receipt with Gemini AI','La IA rellenará los campos automáticamente':'AI will fill in the fields automatically','Cámara':'Camera','Galería':'Gallery','Establecimiento *':'Business *','Establecimiento':'Business','Ej: Mercadona':'Ex: Store','Importe *':'Amount *','Importe':'Amount','Fecha':'Date','Categoría':'Category','Método pago':'Payment method','Método de pago':'Payment method','Notas':'Notes','Opcional...':'Optional...','Guardar gasto':'Save expense','Cancelar':'Cancel',
-    'Foto del ticket':'Receipt photo','ticket':'receipt','Cerrar':'Close','¿Borrar todo?':'Delete everything?','Esta acción elimina todos los gastos del mes. No se puede deshacer.':'This action deletes all expenses for the month. It cannot be undone.','Sí, borrar todo':'Yes, delete everything',
-    'Descargar informe para iniciar nuevo ciclo':'Download report to start a new cycle','Si no descargas, todos los datos y fotos se borrarán permanentemente.':'If you do not download, all data and photos will be permanently deleted.','Crear link de descarga':'Create download link','Limpiar sin descargar':'Clear without downloading','Limpiando...':'Clearing...','Por favor espera':'Please wait','Nuevo ciclo listo':'New cycle ready','La nube está limpia. Empieza el nuevo mes.':'The cloud is clean. Start the new month.','Comenzar nuevo mes':'Start new month',
-    'Control total de tus gastos con IA':'Total control of your expenses with AI','Escanea tickets, guarda tus gastos automáticamente y genera informes profesionales en segundos.':'Scan receipts, save your expenses automatically, and generate professional reports in seconds.','Elige una forma de pago para activar Premium.':'Choose a payment method to activate Premium.','Premium incluye:':'Premium includes:','Guarda todos tus gastos sin límite':'Save unlimited expenses','Escanea tickets automáticamente con IA':'Scan receipts automatically with AI','Fotos ilimitadas de tus tickets':'Unlimited receipt photos','Exporta informes en PDF y Excel':'Export reports in PDF and Excel','Crea informes con fotos para justificar gastos':'Create reports with photos to justify expenses','Nunca pierdas un ticket otra vez':'Never lose a receipt again','Ideal para empezar. Acceso completo a Premium con renovación mensual O Pago unico anual y relajate que escaneamos, guardamos y generamos tus informes de manera profesional':'Ideal to start. Full Premium access with monthly renewal or a one-time annual payment; relax while we scan, save, and generate your reports professionally','Cancela cuando quieras':'Cancel anytime','Pago único':'One-time payment','Paga una vez con Stripe y disfruta Premium por un año.':'Pay once with Stripe and enjoy Premium for one year.','Suscripcion Anual':'Annual Subscription','Suscripción mensual':'Monthly subscription','Suscríbete mensualmente con Stripe y cancela cuando quieras.':'Subscribe monthly with Stripe and cancel anytime.','Suscribsion Mensual':'Monthly Subscription','Bizum por WhatsApp':'Bizum via WhatsApp','Abre WhatsApp para pedir el pago por Bizum y activar Premium.':'Open WhatsApp to request Bizum payment and activate Premium.','Pagar por Bizum':'Pay with Bizum','Ahora no':'Not now',
-    'Límite de fotos alcanzado':'Photo limit reached','Has llegado a':'You have reached','en la versión gratuita.':'in the free version.','Descarga tus informes antes de actualizar.':'Download your reports before upgrading.','Descarga tus datos ahora':'Download your data now','Fotos':'Photos','Quiero ser Premium':'I want Premium','Continuar sin foto':'Continue without photo','ABRE TU CAMARA Y EMPIEZA A GUARDAR TUS GASTOS':'OPEN YOUR CAMERA AND START SAVING YOUR EXPENSES','Activar Premium: Stripe o Bizum':'Activate Premium: Stripe or Bizum','Todos':'All','Tarjeta':'Card','Efectivo':'Cash',
-    'Comida':'Food','Gasolina':'Gas','Transporte':'Transport','Parking':'Parking','Material':'Supplies','Varios':'Misc','Salud':'Health','Ocio':'Leisure','Ropa':'Clothing','Sin fecha':'No date','Sin categoría':'Uncategorized','Sin foto':'No photo','Gastos':'Expenses','gastos':'expenses','gasto':'expense','con foto':'with photo','Fotos de tickets':'Receipt photos','fotos de tickets':'receipt photos','Categorías':'Categories','CATEGORÍAS':'CATEGORIES','Resumen':'Summary','TOTAL':'TOTAL','VER FOTOS DEL INFORME':'VIEW REPORT PHOTOS',
-    'DESGLOSE POR CATEGORÍA':'CATEGORY BREAKDOWN','Desglose por categoría':'Category breakdown','DESCARGA Y COMPARTE TUS INFORMES DE MANERA PROFESIONAL':'DOWNLOAD AND SHARE YOUR REPORTS PROFESSIONALLY','Descarga y comparte tus informes de manera profesional':'Download and share your reports professionally','TOP GASTOS':'TOP EXPENSES','Top gastos':'Top expenses','POR CATEGORÍA':'BY CATEGORY','Por categoría':'By category','MÉTODO PAGO':'PAYMENT METHOD','Método pago':'Payment method','GASTO POR SEMANA':'SPENDING BY WEEK','Gasto por semana':'Spending by week','TICKET MEDIO':'AVERAGE RECEIPT','Ticket medio':'Average receipt','total':'total',
-    'Preparando informe...':'Preparing report...','Informe descargado':'Report downloaded','No hay gastos este mes':'There are no expenses this month','Inicia sesión primero':'Sign in first','No se pudo abrir el informe':'Could not open the report','Nombre guardado':'Name saved','Premium desactivado':'Premium disabled','Quitar PRO':'Remove PRO','Dar PRO':'Give PRO','Vencido':'Expired','Vence en':'Expires in','Faltan':'Remaining','día':'day','días':'days','Free':'Free','Admin':'Admin','Cargando':'Loading','Creado':'Created','Total':'Total','Cantidad':'Quantity','Hoy':'Today','Ayer':'Yesterday','Analizando ticket...':'Analyzing receipt...','Ticket analizado':'Receipt analyzed','No se pudo analizar':'Could not analyze','Guardado':'Saved','Gasto guardado':'Expense saved','Gasto actualizado':'Expense updated','Borrado':'Deleted','Borrando...':'Deleting...','Sin gastos':'No expenses','No hay datos':'No data','Cambiar idioma':'Change language'
-  };
-  var reverse={};Object.keys(dict).forEach(function(k){reverse[dict[k]]=k;});
-  var months={'Enero':'January','Febrero':'February','Marzo':'March','Abril':'April','Mayo':'May','Junio':'June','Julio':'July','Agosto':'August','Septiembre':'September','Octubre':'October','Noviembre':'November','Diciembre':'December','enero':'January','febrero':'February','marzo':'March','abril':'April','mayo':'May','junio':'June','julio':'July','agosto':'August','septiembre':'September','octubre':'October','noviembre':'November','diciembre':'December'};
-  var days={'Domingo':'Sunday','Lunes':'Monday','Martes':'Tuesday','Miércoles':'Wednesday','Jueves':'Thursday','Viernes':'Friday','Sábado':'Saturday'};
-  var revMonths={},revDays={};Object.keys(months).forEach(function(k){revMonths[months[k]]=k.charAt(0).toUpperCase()+k.slice(1);});Object.keys(days).forEach(function(k){revDays[days[k]]=k;});
-  function keysByLength(map){return Object.keys(map).sort(function(a,b){return b.length-a.length;});}
-  function replaceMap(text,map){var out=text;keysByLength(map).forEach(function(k){out=out.split(k).join(map[k]);});return out;}
-  function translateDates(text,to){var out=text;if(to==='en'){out=replaceMap(out,months);out=replaceMap(out,days);out=out.replace(/de\s+(January|February|March|April|May|June|July|August|September|October|November|December)/g,'$1');}else{out=replaceMap(out,revMonths);out=replaceMap(out,revDays);out=out.replace(/(Domingo|Lunes|Martes|Miércoles|Jueves|Viernes|Sábado)\s+(\d{1,2})\s+(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/g,'$1 $2 de $3');}return out;}
-  function translateText(text,to){
+// ── TRADUCTOR ESTABLE ES ↔ EN ──
+// IMPORTANTE: el HTML base debe estar en español.
+// dict = Español -> Inglés
+
+var reverse = {};
+Object.keys(dict).forEach(function(k){
+  reverse[dict[k]] = k;
+});
+
+var months = {
+  'Enero':'January','Febrero':'February','Marzo':'March','Abril':'April','Mayo':'May','Junio':'June',
+  'Julio':'July','Agosto':'August','Septiembre':'September','Octubre':'October','Noviembre':'November','Diciembre':'December',
+  'enero':'January','febrero':'February','marzo':'March','abril':'April','mayo':'May','junio':'June',
+  'julio':'July','agosto':'August','septiembre':'September','octubre':'October','noviembre':'November','diciembre':'December'
+};
+
+var days = {
+  'Domingo':'Sunday','Lunes':'Monday','Martes':'Tuesday','Miércoles':'Wednesday',
+  'Jueves':'Thursday','Viernes':'Friday','Sábado':'Saturday'
+};
+
+var revMonths = {};
+var revDays = {};
+
+Object.keys(months).forEach(function(k){
+  revMonths[months[k]] = k.charAt(0).toUpperCase() + k.slice(1);
+});
+
+Object.keys(days).forEach(function(k){
+  revDays[days[k]] = k;
+});
+
+function keysByLength(map){
+  return Object.keys(map).sort(function(a,b){
+    return b.length - a.length;
+  });
+}
+
+function escapeRegExp(str){
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function replaceMapSafe(text, map){
+  var out = text;
+
+  keysByLength(map).forEach(function(k){
+    var escaped = escapeRegExp(k);
+
+    var pattern = new RegExp(
+      '(^|[^\\p{L}\\p{N}_])(' + escaped + ')(?=$|[^\\p{L}\\p{N}_])',
+      'gu'
+    );
+
+    out = out.replace(pattern, function(match, before, word){
+      return before + map[k];
+    });
+  });
+
+  return out;
+}
+
+function translateDates(text, to){
+  var out = text;
+
+  if(to === 'en'){
+    out = replaceMapSafe(out, months);
+    out = replaceMapSafe(out, days);
+    out = out.replace(/de\s+(January|February|March|April|May|June|July|August|September|October|November|December)/g,'$1');
+  }else{
+    out = replaceMapSafe(out, revMonths);
+    out = replaceMapSafe(out, revDays);
+    out = out.replace(
+      /(Domingo|Lunes|Martes|Miércoles|Jueves|Viernes|Sábado)\s+(\d{1,2})\s+(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/g,
+      '$1 $2 de $3'
+    );
+  }
+
+  return out;
+}
+
+function translateText(text, to){
   if(!text || !text.trim()) return text;
 
-  // IMPORTANTE:
-  // En español NO intentamos "destraducir", porque rompe palabras:
-  // Export -> Exportar -> Exportarar
-  // Gas -> Gasolina -> Gasolinaolina
-  if(to === 'es') return text;
-
-  var lead = (text.match(/^\s*/) || [''])[0];
-  var tail = (text.match(/\s*$/) || [''])[0];
+  var leading = text.match(/^\s*/)[0];
+  var trailing = text.match(/\s*$/)[0];
   var core = text.trim();
 
-  var out = replaceMap(core, dict);
-  out = translateDates(out, to);
+  if(!core) return text;
 
-  return lead + out + tail;
-}
-  function skip(el){if(!el)return true;if(el.closest&&el.closest('.no-translate'))return true;var n=el.nodeName;return n==='SCRIPT'||n==='STYLE'||n==='NOSCRIPT'||n==='TEXTAREA'||n==='CODE'||n==='PRE';}
-  function setAttr(el,a,v){if(el.getAttribute(a)!==v)el.setAttribute(a,v);}
-  function apply(root){
-    root=root||document.body;if(!root)return;
-    document.documentElement.lang=current;
-    document.title='Mis Gastos Pro';
-    var btn=document.getElementById('lang-mini-btn');
-    if(btn){var label=current==='en'?'Change language':'Cambiar idioma';btn.textContent=current.toUpperCase();setAttr(btn,'aria-label',label);setAttr(btn,'title',label);}
-    var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){return skip(node.parentElement)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;}});
-    var nodes=[],node;while((node=walker.nextNode()))nodes.push(node);
-    nodes.forEach(function(n){var v=translateText(n.nodeValue,current);if(v!==n.nodeValue)n.nodeValue=v;});
-    if(root.querySelectorAll){Array.prototype.forEach.call(root.querySelectorAll('input,img,button,[aria-label],[title],option'),function(el){if(el.closest&&el.closest('.no-translate'))return;['placeholder','alt','title','aria-label'].forEach(function(a){var v=el.getAttribute&&el.getAttribute(a);if(v){var nv=translateText(v,current);if(nv!==v)setAttr(el,a,nv);}});});}
-    var brand1=document.getElementById('auth-app-title');if(brand1)brand1.textContent='Mis Gastos Pro';
-    var brand2=document.getElementById('app-name-display');if(brand2)brand2.textContent='Mis Gastos Pro';
-    document.title='Mis Gastos Pro';
+  var translated = core;
+
+  if(to === 'en'){
+    if(dict[core]){
+      translated = dict[core];
+    }else{
+      translated = replaceMapSafe(core, dict);
+    }
+  }else{
+    if(reverse[core]){
+      translated = reverse[core];
+    }else{
+      translated = replaceMapSafe(core, reverse);
+    }
   }
-  function delayedApply(){setTimeout(function(){apply(document.body);},80);}
-  window.setAppLanguage=function(lang){current=lang==='en'?'en':'es';localStorage.setItem(STORE_KEY,current);apply(document.body);};
-  window.toggleAppLanguage=function(){window.setAppLanguage(current==='en'?'es':'en');};
-  window.applyAppLanguage=function(){apply(document.body);};
-  document.addEventListener('DOMContentLoaded',function(){apply(document.body);});
-  window.addEventListener('load',function(){apply(document.body);});
-  document.addEventListener('click',function(){if(current==='en')delayedApply();},true);
-})();
+
+  translated = translateDates(translated, to);
+
+  return leading + translated + trailing;
+}
+
+function skip(el){
+  if(!el) return true;
+
+  var tag = el.tagName;
+  if(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','CODE','PRE'].includes(tag)) return true;
+
+  if(el.closest && el.closest('.no-translate')) return true;
+
+  return false;
+}
+
+function setAttr(el, attr, val){
+  if(el && el.setAttribute){
+    el.setAttribute(attr, val);
+  }
+}
+
+function apply(root){
+  root = root || document.body;
+  if(!root) return;
+
+  document.documentElement.lang = current;
+  document.title = 'Mis Gastos Pro';
+
+  var btn = document.getElementById('lang-mini-btn');
+  if(btn){
+    var label = current === 'en' ? 'Change language' : 'Cambiar idioma';
+    btn.textContent = current.toUpperCase();
+    setAttr(btn, 'aria-label', label);
+    setAttr(btn, 'title', label);
+  }
+
+  var walker = document.createTreeWalker(
+    root,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode:function(node){
+        return skip(node.parentElement)
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT;
+      }
+    }
+  );
+
+  var nodes = [];
+  var node;
+
+  while((node = walker.nextNode())){
+    nodes.push(node);
+  }
+
+  nodes.forEach(function(n){
+    if(!n.__originalText){
+      n.__originalText = n.nodeValue;
+    }
+
+    n.nodeValue = translateText(n.__originalText, current);
+  });
+
+  if(root.querySelectorAll){
+    Array.prototype.forEach.call(
+      root.querySelectorAll('input,img,button,[aria-label],[title],option'),
+      function(el){
+        if(el.closest && el.closest('.no-translate')) return;
+
+        ['placeholder','alt','title','aria-label'].forEach(function(a){
+          var v = el.getAttribute && el.getAttribute(a);
+          if(!v) return;
+
+          var key = 'original' + a.replace(/-/g,'_');
+
+          if(!el.dataset[key]){
+            el.dataset[key] = v;
+          }
+
+          setAttr(el, a, translateText(el.dataset[key], current));
+        });
+      }
+    );
+  }
+
+  var brand1 = document.getElementById('auth-app-title');
+  if(brand1) brand1.textContent = 'Mis Gastos Pro';
+
+  var brand2 = document.getElementById('app-name-display');
+  if(brand2) brand2.textContent = 'Mis Gastos Pro';
+
+  document.title = 'Mis Gastos Pro';
+}
+
+window.setAppLanguage = function(lang){
+  current = lang === 'en' ? 'en' : 'es';
+  localStorage.setItem(STORE_KEY, current);
+  apply(document.body);
+};
+
+window.toggleAppLanguage = function(){
+  window.setAppLanguage(current === 'en' ? 'es' : 'en');
+};
+
+document.addEventListener('DOMContentLoaded', function(){
+  current = localStorage.getItem(STORE_KEY) || 'es';
+  window.setAppLanguage(current);
+});
 </script>
 </body>
 </html>
