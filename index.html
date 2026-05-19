@@ -2147,220 +2147,163 @@ window.adminTogglePremium=async function(){
   Efra Apps © 2026
 </div>
 <script id="i18n-lang-script">
-// ── TRADUCTOR ESTABLE ES ↔ EN ──
-// IMPORTANTE: el HTML base debe estar en español.
-// dict = Español -> Inglés
 
-var reverse = {};
-Object.keys(dict).forEach(function(k){
-  reverse[dict[k]] = k;
-});
-
-var months = {
-  'Enero':'January','Febrero':'February','Marzo':'March','Abril':'April','Mayo':'May','Junio':'June',
-  'Julio':'July','Agosto':'August','Septiembre':'September','Octubre':'October','Noviembre':'November','Diciembre':'December',
-  'enero':'January','febrero':'February','marzo':'March','abril':'April','mayo':'May','junio':'June',
-  'julio':'July','agosto':'August','septiembre':'September','octubre':'October','noviembre':'November','diciembre':'December'
-};
-
-var days = {
-  'Domingo':'Sunday','Lunes':'Monday','Martes':'Tuesday','Miércoles':'Wednesday',
-  'Jueves':'Thursday','Viernes':'Friday','Sábado':'Saturday'
-};
-
-var revMonths = {};
-var revDays = {};
-
-Object.keys(months).forEach(function(k){
-  revMonths[months[k]] = k.charAt(0).toUpperCase() + k.slice(1);
-});
-
-Object.keys(days).forEach(function(k){
-  revDays[days[k]] = k;
-});
+var reverse={};
+Object.keys(dict).forEach(function(k){ reverse[dict[k]]=k; });
 
 function keysByLength(map){
-  return Object.keys(map).sort(function(a,b){
-    return b.length - a.length;
-  });
+  return Object.keys(map).sort(function(a,b){ return b.length-a.length; });
 }
 
 function escapeRegExp(str){
-  return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return String(str).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 }
 
-function replaceMapSafe(text, map){
-  var out = text;
-
+function replaceMapSafe(text,map){
+  var out=text;
   keysByLength(map).forEach(function(k){
-    var escaped = escapeRegExp(k);
-
-    var pattern = new RegExp(
-      '(^|[^\\p{L}\\p{N}_])(' + escaped + ')(?=$|[^\\p{L}\\p{N}_])',
-      'gu'
-    );
-
-    out = out.replace(pattern, function(match, before, word){
-      return before + map[k];
-    });
+    var re=new RegExp('(^|[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9_])('+escapeRegExp(k)+')(?=$|[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ0-9_])','g');
+    out=out.replace(re,function(m,b,w){return b+map[k];});
   });
-
   return out;
 }
 
-function translateDates(text, to){
-  var out = text;
+var months={
+  'Enero':'January','Febrero':'February','Marzo':'March','Abril':'April','Mayo':'May','Junio':'June','Julio':'July','Agosto':'August','Septiembre':'September','Octubre':'October','Noviembre':'November','Diciembre':'December',
+  'enero':'January','febrero':'February','marzo':'March','abril':'April','mayo':'May','junio':'June','julio':'July','agosto':'August','septiembre':'September','octubre':'October','noviembre':'November','diciembre':'December'
+};
 
-  if(to === 'en'){
-    out = replaceMapSafe(out, months);
-    out = replaceMapSafe(out, days);
-    out = out.replace(/de\s+(January|February|March|April|May|June|July|August|September|October|November|December)/g,'$1');
+var days={
+  'Domingo':'Sunday','Lunes':'Monday','Martes':'Tuesday','Miércoles':'Wednesday','Jueves':'Thursday','Viernes':'Friday','Sábado':'Saturday'
+};
+
+var revMonths={},revDays={};
+Object.keys(months).forEach(function(k){
+  revMonths[months[k]]=k.charAt(0).toUpperCase()+k.slice(1);
+});
+Object.keys(days).forEach(function(k){
+  revDays[days[k]]=k;
+});
+
+function translateDates(text,to){
+  var out=text;
+  if(to==='en'){
+    out=replaceMapSafe(out,months);
+    out=replaceMapSafe(out,days);
+    out=out.replace(/de\s+(January|February|March|April|May|June|July|August|September|October|November|December)/g,'$1');
   }else{
-    out = replaceMapSafe(out, revMonths);
-    out = replaceMapSafe(out, revDays);
-    out = out.replace(
-      /(Domingo|Lunes|Martes|Miércoles|Jueves|Viernes|Sábado)\s+(\d{1,2})\s+(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/g,
-      '$1 $2 de $3'
-    );
+    out=replaceMapSafe(out,revMonths);
+    out=replaceMapSafe(out,revDays);
   }
-
   return out;
 }
 
-function translateText(text, to){
+function translateText(text,to){
   if(!text || !text.trim()) return text;
 
-  var leading = text.match(/^\s*/)[0];
-  var trailing = text.match(/\s*$/)[0];
-  var core = text.trim();
+  var lead=(text.match(/^\s*/)||[''])[0];
+  var tail=(text.match(/\s*$/)||[''])[0];
+  var core=text.trim();
+  var out=core;
 
-  if(!core) return text;
-
-  var translated = core;
-
-  if(to === 'en'){
-    if(dict[core]){
-      translated = dict[core];
-    }else{
-      translated = replaceMapSafe(core, dict);
-    }
+  if(to==='en'){
+    out=dict[core] || replaceMapSafe(core,dict);
   }else{
-    if(reverse[core]){
-      translated = reverse[core];
-    }else{
-      translated = replaceMapSafe(core, reverse);
-    }
+    out=reverse[core] || replaceMapSafe(core,reverse);
   }
 
-  translated = translateDates(translated, to);
-
-  return leading + translated + trailing;
+  out=translateDates(out,to);
+  return lead+out+tail;
 }
 
 function skip(el){
-  if(!el) return true;
-
-  var tag = el.tagName;
-  if(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','CODE','PRE'].includes(tag)) return true;
-
-  if(el.closest && el.closest('.no-translate')) return true;
-
-  return false;
+  if(!el)return true;
+  if(el.closest&&el.closest('.no-translate'))return true;
+  var n=el.nodeName;
+  return n==='SCRIPT'||n==='STYLE'||n==='NOSCRIPT'||n==='TEXTAREA'||n==='CODE'||n==='PRE';
 }
 
-function setAttr(el, attr, val){
-  if(el && el.setAttribute){
-    el.setAttribute(attr, val);
-  }
+function setAttr(el,a,v){
+  if(el&&el.getAttribute&&el.getAttribute(a)!==v)el.setAttribute(a,v);
 }
 
 function apply(root){
-  root = root || document.body;
-  if(!root) return;
+  root=root||document.body;
+  if(!root)return;
 
-  document.documentElement.lang = current;
-  document.title = 'Mis Gastos Pro';
+  document.documentElement.lang=current;
+  document.title='Mis Gastos Pro';
 
-  var btn = document.getElementById('lang-mini-btn');
+  var btn=document.getElementById('lang-mini-btn');
   if(btn){
-    var label = current === 'en' ? 'Change language' : 'Cambiar idioma';
-    btn.textContent = current.toUpperCase();
-    setAttr(btn, 'aria-label', label);
-    setAttr(btn, 'title', label);
+    var label=current==='en'?'Change language':'Cambiar idioma';
+    btn.textContent=current.toUpperCase();
+    setAttr(btn,'aria-label',label);
+    setAttr(btn,'title',label);
   }
 
-  var walker = document.createTreeWalker(
-    root,
-    NodeFilter.SHOW_TEXT,
-    {
-      acceptNode:function(node){
-        return skip(node.parentElement)
-          ? NodeFilter.FILTER_REJECT
-          : NodeFilter.FILTER_ACCEPT;
-      }
+  var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{
+    acceptNode:function(node){
+      return skip(node.parentElement)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;
     }
-  );
+  });
 
-  var nodes = [];
-  var node;
-
-  while((node = walker.nextNode())){
-    nodes.push(node);
-  }
+  var nodes=[],node;
+  while((node=walker.nextNode()))nodes.push(node);
 
   nodes.forEach(function(n){
-    if(!n.__originalText){
-      n.__originalText = n.nodeValue;
-    }
-
-    n.nodeValue = translateText(n.__originalText, current);
+    if(!n.__originalText)n.__originalText=n.nodeValue;
+    n.nodeValue=translateText(n.__originalText,current);
   });
 
   if(root.querySelectorAll){
-    Array.prototype.forEach.call(
-      root.querySelectorAll('input,img,button,[aria-label],[title],option'),
-      function(el){
-        if(el.closest && el.closest('.no-translate')) return;
+    Array.prototype.forEach.call(root.querySelectorAll('input,img,button,[aria-label],[title],option'),function(el){
+      if(el.closest&&el.closest('.no-translate'))return;
 
-        ['placeholder','alt','title','aria-label'].forEach(function(a){
-          var v = el.getAttribute && el.getAttribute(a);
-          if(!v) return;
+      ['placeholder','alt','title','aria-label'].forEach(function(a){
+        var v=el.getAttribute&&el.getAttribute(a);
+        if(!v)return;
 
-          var key = 'original' + a.replace(/-/g,'_');
+        var key='original_'+a.replace(/-/g,'_');
+        if(!el.dataset[key])el.dataset[key]=v;
 
-          if(!el.dataset[key]){
-            el.dataset[key] = v;
-          }
-
-          setAttr(el, a, translateText(el.dataset[key], current));
-        });
-      }
-    );
+        setAttr(el,a,translateText(el.dataset[key],current));
+      });
+    });
   }
 
-  var brand1 = document.getElementById('auth-app-title');
-  if(brand1) brand1.textContent = 'Mis Gastos Pro';
+  var brand1=document.getElementById('auth-app-title');
+  if(brand1)brand1.textContent='Mis Gastos Pro';
 
-  var brand2 = document.getElementById('app-name-display');
-  if(brand2) brand2.textContent = 'Mis Gastos Pro';
+  var brand2=document.getElementById('app-name-display');
+  if(brand2)brand2.textContent='Mis Gastos Pro';
 
-  document.title = 'Mis Gastos Pro';
+  document.title='Mis Gastos Pro';
 }
 
-window.setAppLanguage = function(lang){
-  current = lang === 'en' ? 'en' : 'es';
-  localStorage.setItem(STORE_KEY, current);
+window.setAppLanguage=function(lang){
+  current=lang==='en'?'en':'es';
+  localStorage.setItem(STORE_KEY,current);
   apply(document.body);
 };
 
-window.toggleAppLanguage = function(){
-  window.setAppLanguage(current === 'en' ? 'es' : 'en');
+window.toggleAppLanguage=function(){
+  window.setAppLanguage(current==='en'?'es':'en');
 };
 
-document.addEventListener('DOMContentLoaded', function(){
-  current = localStorage.getItem(STORE_KEY) || 'es';
-  window.setAppLanguage(current);
+window.applyAppLanguage=function(){
+  apply(document.body);
+};
+
+document.addEventListener('DOMContentLoaded',function(){
+  current=localStorage.getItem(STORE_KEY)||'es';
+  apply(document.body);
 });
+
+window.addEventListener('load',function(){
+  apply(document.body);
+});
+  
 </script>
 </body>
 </html>
